@@ -1,3 +1,5 @@
+const { piece_switch } = require("./piece_switch");
+
 class game {
     constructor() {
         /*
@@ -63,115 +65,8 @@ class game {
         const piece = this._board[y][x]; //needs to be stringified or some form of check
         const pieceColor = piece[0];
         const pieceType = piece[1]; // getting the second letter of the string to identify the piece
-        const coveredSquares = [];
-
-        switch(pieceType) {
-            case  'K':
-                const up = [x, y + 1];
-                const down = [x, y - 1];
-                const left = [x - 1, y];
-                const right = [x + 1, y];
-
-                const leftUp = [x - 1, y + 1];
-                const rightUp = [x + 1, y + 1];
-                const leftDown = [x - 1, y - 1];
-                const rightDown = [x + 1, y - 1];
-
-                coveredSquares.push(...this.checkSquares(up, pieceColor));
-                coveredSquares.push(...this.checkSquares(down, pieceColor));
-                coveredSquares.push(...this.checkSquares(left, pieceColor));
-                coveredSquares.push(...this.checkSquares(right, pieceColor));
-
-                coveredSquares.push(...this.checkSquares(leftUp, pieceColor));
-                coveredSquares.push(...this.checkSquares(rightUp, pieceColor));
-                coveredSquares.push(...this.checkSquares(leftDown, pieceColor));
-                coveredSquares.push(...this.checkSquares(rightDown, pieceColor));
-                break;
-            case  'Q':
-                const up = [];
-                const down = [];
-                const left = [];
-                const right = [];
-
-                const leftUp = [];
-                const rightUp = [];
-                const leftDown = [];
-                const rightDown = [];
-
-                for (let i = 1; i <= 8; i++) {
-                    up.push([x, y + i]);
-                    down.push([x, y - i]);
-                    left.push([x - i, y]);
-                    right.push([x + i, y]);
-
-                    leftUp.push([x - i, y + i]);
-                    rightUp.push([x + i, y + i]);
-                    leftDown.push([x - i, y - i]);
-                    rightDown.push([x + i, y - i]);
-                };
-                coveredSquares.push(...this.checkSquares(up, pieceColor));
-                coveredSquares.push(...this.checkSquares(down, pieceColor));
-                coveredSquares.push(...this.checkSquares(left, pieceColor));
-                coveredSquares.push(...this.checkSquares(right, pieceColor));
-
-                coveredSquares.push(...this.checkSquares(leftUp, pieceColor));
-                coveredSquares.push(...this.checkSquares(rightUp, pieceColor));
-                coveredSquares.push(...this.checkSquares(leftDown, pieceColor));
-                coveredSquares.push(...this.checkSquares(rightDown, pieceColor));
-                break;
-            case  'R':
-                const up = [];
-                const down = [];
-                const left = [];
-                const right = [];
-                for (let i = 1; i <= 8; i++) {
-                    up.push([x, y + i]);
-                    down.push([x, y - i]);
-                    left.push([x - i, y]);
-                    right.push([x + i, y]);
-                };
-                coveredSquares.push(...this.checkSquares(up, pieceColor));
-                coveredSquares.push(...this.checkSquares(down, pieceColor));
-                coveredSquares.push(...this.checkSquares(left, pieceColor));
-                coveredSquares.push(...this.checkSquares(right, pieceColor));
-                break;
-            case 'B': // Bishop
-                const leftUp = [];
-                const rightUp = [];
-                const leftDown = [];
-                const rightDown = [];
-                for (let i = 1; i <= 8; i++) {
-                    leftUp.push([x - i, y + i]);
-                    rightUp.push([x + i, y + i]);
-                    leftDown.push([x - i, y - i]);
-                    rightDown.push([x + i, y - i]);
-                };
-                coveredSquares.push(...this.checkSquares(leftUp, pieceColor));
-                coveredSquares.push(...this.checkSquares(rightUp, pieceColor));
-                coveredSquares.push(...this.checkSquares(leftDown, pieceColor));
-                coveredSquares.push(...this.checkSquares(rightDown, pieceColor));
-                break;
-            case 'N': // Knight: needs refeactoring to meet structure above: define array
-                coveredSquares.push(...this.checkSquares([[x + 2, y + 1]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x + 2, y - 1]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x - 2, y + 1]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x - 2, y - 1]],pieceColor));
-
-                coveredSquares.push(...this.checkSquares([[x + 1, y + 2]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x + 1, y - 2]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x - 1, y + 2]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x - 1, y - 2]],pieceColor));
-                break;
-            case 'P': // Pawn: needs refeactoring to meet structure above: define array + en passant
-                let add = -1;
-                if (pieceColor === 'w') { // depands on the color where to move
-                    add = 1;
-                }
-
-                coveredSquares.push(...this.checkSquares([[x - 1, y + add]],pieceColor));
-                coveredSquares.push(...this.checkSquares([[x + 1, y + add]],pieceColor));
-                break;
-        };
+        
+        const coveredSquares = piece_switch(x, y, this, pieceType, pieceColor);
 
         return {'pieceColor': pieceColor, 'pieceType': pieceType, 'coveredSquaresBySpecificPiece': coveredSquares};
     }
@@ -189,3 +84,5 @@ const test = new game();
 //console.log(test.getLegalMovesOfSpecificPiece(1,8));
 
 console.log(test.getCoveredSquaresBySpecificPiece(4,2));
+
+module.exports = {game};
