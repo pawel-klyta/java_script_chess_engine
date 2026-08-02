@@ -12,15 +12,15 @@ const piece_switch = (x, y, This, pieceType, pieceColor) => {
     let rightDown = [];
     switch(pieceType) {
         case  'K':
-            up = [x, y + 1];
-            down = [x, y - 1];
-            left = [x - 1, y];
-            right = [x + 1, y];
+            up = [[x, y + 1]];
+            down = [[x, y - 1]];
+            left = [[x - 1, y]];
+            right = [[x + 1, y]];
 
-            leftUp = [x - 1, y + 1];
-            rightUp = [x + 1, y + 1];
-            leftDown = [x - 1, y - 1];
-            rightDown = [x + 1, y - 1];
+            leftUp = [[x - 1, y + 1]];
+            rightUp = [[x + 1, y + 1]];
+            leftDown = [[x - 1, y - 1]];
+            rightDown = [[x + 1, y - 1]];
 
             coveredSquares.push(...This.checkSquares(up, pieceColor));
             coveredSquares.push(...This.checkSquares(down, pieceColor));

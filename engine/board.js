@@ -49,14 +49,11 @@ class game {
             if (x < 1 || x > 8 || y < 1 || y > 8) {
                 return result;
             };
-
-            const squareToCheck = this._board[y][x];
-            if (squareToCheck !== false) {
-                if (squareToCheck[0] === pieceColor) {
-                return result;
-                };
-            };
             result.push([x, y]);
+            const squareToCheck = this._board[y][x];
+            if (squareToCheck !== false && squareToCheck[0] === pieceColor) {
+                return result;
+            };
         };
         return result;
     }
@@ -65,10 +62,24 @@ class game {
         const piece = this._board[y][x]; //needs to be stringified or some form of check
         const pieceColor = piece[0];
         const pieceType = piece[1]; // getting the second letter of the string to identify the piece
-        
         const coveredSquares = piece_switch(x, y, this, pieceType, pieceColor);
 
         return {'pieceColor': pieceColor, 'pieceType': pieceType, 'coveredSquaresBySpecificPiece': coveredSquares};
+    }
+
+    getCoveredSquares(pieceColor) {
+        let currentPiece;
+        let result = 0;
+
+        for (let x = 1; x <= 8; x++) {
+            for (let y = 1; y <= 8; y++) {
+                currentPiece = this._board[y][x];
+                if (currentPiece[0] === pieceColor) {
+                    result += this.getCoveredSquaresBySpecificPiece(x, y).coveredSquaresBySpecificPiece.length;
+                };
+            };
+        };
+        return result;
     }
 
     getLegalMovesOfSpecificPiece(coordLetter, coordNumber) {
@@ -81,8 +92,11 @@ class game {
 };
 
 const test = new game();
-//console.log(test.getLegalMovesOfSpecificPiece(1,8));
+//console.log(test.getLegalMovesOfSpecificPiece(1,8)); 
 
-console.log(test.getCoveredSquaresBySpecificPiece(4,2));
+//console.log(test.getCoveredSquaresBySpecificPiece(1,2));
+//console.log(test.getCoveredSquaresBySpecificPiece(1,2).coveredSquaresBySpecificPiece.length);
+
+console.log(test.getCoveredSquares('w'));
 
 module.exports = {game};
