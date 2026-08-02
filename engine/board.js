@@ -1,8 +1,10 @@
-const { piece_switch } = require("./piece_switch");
+const { pieceSwitch } = require("./pieceSwitch");
 
 class game {
     constructor() {
         /*
+            false => free square
+
             w => white, b => black
 
             K => King
@@ -49,25 +51,37 @@ class game {
             if (x < 1 || x > 8 || y < 1 || y > 8) {
                 return result;
             };
-            result.push([x, y]);
             const squareToCheck = this._board[y][x];
-            if (squareToCheck !== false && squareToCheck[0] === pieceColor) {
+            if (squareToCheck !== false && (squareToCheck[0] === 'w' || squareToCheck[0] === 'b')) {
+                result.push([x, y, squareToCheck]);
                 return result;
             };
+            result.push([x, y, false]);
         };
         return result;
     }
 
-    getCoveredSquaresBySpecificPiece(x, y) {
-        const piece = this._board[y][x]; //needs to be stringified or some form of check
+    getCoveredSquaresBySpecificPiece(x, y) { 
+        /*  
+            returns an element in the following schema
+            {
+                pieceColor: 'w', // the color of the given piece
+                pieceType: 'K', // type of the given piece
+                coveredSquaresBySpecificPiece: [
+                    [ x-coordinate, y-coordinate, 'string of piece the given piece has in sight with specified color of the looked at piece with [0] and [1] specifieng the type' ], // can be multiple squares
+                    [ 4, 1, 'wQ' ]
+                ]
+            }
+        */
+        const piece = this._board[y][x];
         const pieceColor = piece[0];
         const pieceType = piece[1]; // getting the second letter of the string to identify the piece
-        const coveredSquares = piece_switch(x, y, this, pieceType, pieceColor);
+        const coveredSquares = pieceSwitch(x, y, this, pieceType, pieceColor);
 
         return {'pieceColor': pieceColor, 'pieceType': pieceType, 'coveredSquaresBySpecificPiece': coveredSquares};
     }
 
-    getCoveredSquares(pieceColor) {
+    getCoveredSquares(pieceColor) { // returns the number of the total squares, which are in sight of all the pieces of one of the colors
         let currentPiece;
         let result = 0;
 
@@ -80,10 +94,10 @@ class game {
             };
         };
         return result;
-    }
+    } 
 
     getLegalMovesOfSpecificPiece(coordLetter, coordNumber) {
-        const piece = this._board[coordNumber][coordLetter]; //needs to be stringified or some form of check
+        const piece = this._board[coordNumber][coordLetter]; 
         const pieceType = piece[1]; // getting the second letter of the string to identify the piece
 
         const legal = [];
@@ -91,12 +105,15 @@ class game {
     }
 };
 
+module.exports = {game};
+
+// some tests
+
 const test = new game();
+
 //console.log(test.getLegalMovesOfSpecificPiece(1,8)); 
 
-//console.log(test.getCoveredSquaresBySpecificPiece(1,2));
-//console.log(test.getCoveredSquaresBySpecificPiece(1,2).coveredSquaresBySpecificPiece.length);
+console.log(test.getCoveredSquaresBySpecificPiece(5,1));
+console.log(test.getCoveredSquaresBySpecificPiece(5,1).coveredSquaresBySpecificPiece.length);
 
 console.log(test.getCoveredSquares('w'));
-
-module.exports = {game};

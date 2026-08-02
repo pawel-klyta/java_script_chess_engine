@@ -1,4 +1,4 @@
-const piece_switch = (x, y, This, pieceType, pieceColor) => {
+const pieceSwitch = (x, y, This, pieceType, pieceColor) => {
     const coveredSquares = [];
 
     let up = [];
@@ -102,4 +102,4 @@ const piece_switch = (x, y, This, pieceType, pieceColor) => {
     return coveredSquares;
 };
 
-module.exports = {piece_switch};
+module.exports = {pieceSwitch};
