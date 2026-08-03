@@ -102,4 +102,39 @@ const pieceSwitch = (x, y, This, pieceType, pieceColor) => {
     return coveredSquares;
 };
 
-module.exports = {pieceSwitch};
+// helper functions for pieceSwitchCheckPath()
+
+//
+const pieceSwitchCheckPath = (pieceData) => {
+    const checkPath = [pieceData['coords']]; // are the squares which can brake the check by either blocking or capturing the piece
+    const coveredSquares = pieceData.coveredSquaresBySpecificPiece;
+    const oppositeColoredKing = (()=>{if (pieceData['piece'][0] === 'w') {return 'bK'} else {return 'wK'};})(); 
+
+    switch (pieceData['piece'][1]) {
+        case 'N': // Knight only allows to brake the check if captured or opponent king moves
+            return checkPath;
+        case 'P': // Pawn only allows to brake the check if captured or opponent king moves, en-passant maybe needs some update to this logic
+            return checkPath;
+
+        default: // Q, R and B are included in this logic
+            for (let i = 0; i < coveredSquares.length; i++) {
+                if (coveredSquares[i][2] === oppositeColoredKing) {
+                    let inPath = [coveredSquares[i - 1][0], coveredSquares[i - 1][1]];
+                    let xDelta = pieceData['checksAt'][0] - inPath[0];
+                    let yDelta = pieceData['checksAt'][1] - inPath[1];
+                    console.log(xDelta);
+                    console.log(yDelta);
+                    while (inPath[0] !== pieceData['coords'][0] || inPath[1] !== pieceData['coords'][1]) {
+                        checkPath.push([...inPath]);
+                        inPath[0] -= xDelta;
+                        inPath[1] -= yDelta;
+                    };
+                    return checkPath;
+                };
+            };
+            return checkPath;
+            // King cant give checks
+    }
+};
+
+module.exports = { pieceSwitch, pieceSwitchCheckPath};

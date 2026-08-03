@@ -1,4 +1,4 @@
-const { pieceSwitch } = require("./pieceSwitch");
+const { pieceSwitch, pieceSwitchCheckPath } = require("./pieceSwitch");
 
 class game {
     constructor() {
@@ -25,7 +25,7 @@ class game {
             '4':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '3':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'wP','5': false,'6': 'wP','7': 'wP','8': 'wP'},
-            '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wK','5': 'wQ','6': 'wB','7': 'wN','8': 'wR'}
+            '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wK','5': 'wR','6': 'wB','7': 'wN','8': 'wR'}
         };
 
         this._whiteMaterial = 39;
@@ -80,24 +80,25 @@ class game {
         const oppositeColoredKing = (()=>{if (pieceColor === 'w') {return 'bK'} else {return 'wK'};})(); 
         const pieceType = piece[1]; // getting the second letter of the string to identify the piece
         const coveredSquares = pieceSwitch(x, y, this, pieceType, pieceColor);
-
-        let checks = false;
-        let checksAt = false;
         
+        const toReturn = {
+            'coords': [x, y], 
+            'piece': piece,
+            'coveredSquaresBySpecificPiece': coveredSquares,
+            'checks': false
+        }
+
         for (let i = 0; i < coveredSquares.length; i++) {
             if (coveredSquares[i][2] === oppositeColoredKing) {
-                checks = oppositeColoredKing;
-                checksAt = [coveredSquares[i][0], coveredSquares[i][1]];
+                toReturn['checks'] = oppositeColoredKing;
+                toReturn['checksAt'] = [coveredSquares[i][0], coveredSquares[i][1]];
+                toReturn['checkPath'] = pieceSwitchCheckPath(toReturn);
+                this.inCheck = toReturn;
                 break;
             };
         };
 
-        return {'coords': [x, y], 
-                'piece': piece,
-                'coveredSquaresBySpecificPiece': coveredSquares,
-                'checks': checks,
-                'checksAt': checksAt
-        };
+        return toReturn
     }
 
     getCoveredSquares(pieceColor) { // returns the number of the total squares, which are in sight of all the pieces of one of the colors
@@ -115,24 +116,10 @@ class game {
         return result;
     } 
 
-    isInCheck() {
-        const whiteCoveredSquares = this.getCoveredSquares('w');
-        const blackCoveredSquares = this.getCoveredSquares('b');
-        
-        for (let i = 0; i < whiteCoveredSquares.length; i++) {
-            if (whiteCoveredSquares[i]['checks'] === 'bK') {
-                //return {
-                //    x: whiteCoveredSquares[i]['x'],
-                //};
-                return whiteCoveredSquares[i];
-            };
-        };
-        for (let i = 0; i < blackCoveredSquares.length; i++) {
-            if (blackCoveredSquares[i]['checks'] === 'wK') {
-                return whiteCoveredSquares[i];
-            };
-        };
-        return false;
+    updateInCheck() {
+        this.getCoveredSquares('w');
+        this.getCoveredSquares('b');
+        return this.inCheck;
     }
 
     getLegalMovesOfSpecificPiece(x, y) {
@@ -141,7 +128,7 @@ class game {
         const pieceType = piece[1];
         const legal = [];
 
-        this.isInCheck();
+        const check = this.updateInCheck();
 
         switch(pieceType) {
             case  'K':
@@ -171,10 +158,11 @@ const test = new game();
 //console.log(test.getLegalMovesOfSpecificPiece(1,8)); 
 
 console.log(test.getCoveredSquaresBySpecificPiece(5,1));
+//console.log(test.getCoveredSquaresBySpecificPiece(4,1));
 //console.log(test.getCoveredSquaresBySpecificPiece(3,1).coveredSquaresBySpecificPiece.length);
 
 //console.log(test.getCoveredSquares('w')[8]);
 
 // console.log(test.getCoveredSquares('w'));
 
-//console.log(test.isInCheck());
+//console.log(test.inCheck);
