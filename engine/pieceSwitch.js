@@ -110,6 +110,11 @@ const pieceSwitchCheckPath = (pieceData) => {
     const coveredSquares = pieceData.coveredSquaresBySpecificPiece;
     const oppositeColoredKing = (()=>{if (pieceData['piece'][0] === 'w') {return 'bK'} else {return 'wK'};})(); 
 
+    const distance = ((pieceData['coords'][0] - pieceData['checksAt'][0])**2) * ((pieceData['coords'][1] - pieceData['checksAt'][1])**2);
+    if (distance === 1) {
+        return checkPath;
+    }; // checks if checking piece is only one square away
+
     switch (pieceData['piece'][1]) {
         case 'N': // Knight only allows to brake the check if captured or opponent king moves
             return checkPath;
@@ -122,8 +127,6 @@ const pieceSwitchCheckPath = (pieceData) => {
                     let inPath = [coveredSquares[i - 1][0], coveredSquares[i - 1][1]];
                     let xDelta = pieceData['checksAt'][0] - inPath[0];
                     let yDelta = pieceData['checksAt'][1] - inPath[1];
-                    console.log(xDelta);
-                    console.log(yDelta);
                     while (inPath[0] !== pieceData['coords'][0] || inPath[1] !== pieceData['coords'][1]) {
                         checkPath.push([...inPath]);
                         inPath[0] -= xDelta;
