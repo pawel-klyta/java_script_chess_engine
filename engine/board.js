@@ -2,7 +2,8 @@ const { pieceSwitch,
         pieceSwitchCheckPath, 
         filterOutWhenChecked, 
         filterOutSameColor,
-        getOppositeColor
+        getOppositeColor,
+        restrictKing
     } = require("./helper.js");
 
 class game {
@@ -24,12 +25,12 @@ class game {
         */
         this.board = {
             '8':    {'1': 'bR','2': 'bN','3': 'bB','4': 'bQ','5': 'bQ','6': 'bB','7': 'bN','8': 'bR'},
-            '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
+            '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': false,'6': 'bP','7': 'bP','8': 'bP'},
             '6':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '5':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '4':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '3':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'wP','5': false,'6': 'wP','7': 'wP','8': 'wP'},
+            '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'bP','5': false,'6': 'wP','7': 'wP','8': 'wP'},
             '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wQ','5': 'wK','6': 'wB','7': 'wN','8': 'wR'}
         };
 
@@ -38,7 +39,7 @@ class game {
         this.currentToMove = 'w';
         this.inCheck = false;
         this.coveredSquaresWhite = this.getCoveredSquares('w');
-        this.coveredSquaresWhite = this.getCoveredSquares('b');
+        this.coveredSquaresBlack = this.getCoveredSquares('b');
     }
 
     static intoNumeric(letter) {
@@ -97,6 +98,9 @@ class game {
 
         for (let i = 0; i < coveredSquares.length; i++) {
             if (coveredSquares[i][2] === oppositeColoredKing) {
+                if (this.inCheck) {
+                    console.log('double check detected'); // needs logic
+                };
                 toReturn['checks'] = oppositeColoredKing;
                 toReturn['checksAt'] = [coveredSquares[i][0], coveredSquares[i][1]];
                 toReturn['checkPath'] = pieceSwitchCheckPath(toReturn);
@@ -126,7 +130,7 @@ class game {
     updateBoard() {
         this.inCheck = false;
         this.coveredSquaresWhite = this.getCoveredSquares('w');
-        this.coveredSquaresWhite = this.getCoveredSquares('b');
+        this.coveredSquaresBlack = this.getCoveredSquares('b');
         return this.inCheck;
     }
 
@@ -155,18 +159,24 @@ class game {
         };
         // for debugging 
 
+        piece.legal = filterOutSameColor(piece.coveredSquaresBySpecificPiece, piece.piece[0]);
         switch(piece.piece[1]) {
             case  'K':
+                let coveredByOpposite = this.coveredSquaresBlack;
+                if (oppositeColor === 'w') {
+                    coveredByOpposite = this.coveredSquaresWhite;
+                };
+                piece.legal = restrictKing(piece.legal, coveredByOpposite);
                 break;
             case  'P':
                 break;
             default:
-                piece.legal = filterOutSameColor(piece.coveredSquaresBySpecificPiece, piece.piece[0]);
                 if (this.inCheck) {
                     piece.legal = filterOutWhenChecked(piece.legal, this.inCheck.checkPath);
                 };
-                return piece;
+                break;
         };
+        return piece;
     }
 };
 
@@ -178,11 +188,12 @@ const test = new game();
 
 //console.log(test.getLegalMovesOfSpecificPiece(1,8)); 
 
-//sconsole.log(test.getCoveredSquaresBySpecificPiece(5,8));
+//console.log(test.getCoveredSquaresBySpecificPiece(5,8));
 //console.log(test.getCoveredSquaresBySpecificPiece(3,2));
 
 //console.log(test.getCoveredSquaresBySpecificPiece(6,1));
 console.log(test.getLegalMovesOfSpecificPiece(4,1));
+console.log(test.getLegalMovesOfSpecificPiece(5,1));
 //console.log(test.coveredSquaresWhite);
 //console.log(test.getCoveredSquaresBySpecificPiece(4,1));
 //console.log(test.getCoveredSquaresBySpecificPiece(3,1).coveredSquaresBySpecificPiece.length);

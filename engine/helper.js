@@ -168,4 +168,53 @@ const filterOutSameColor = (squareArray, pieceColor) => {
     return result;
 };
 
-module.exports = { pieceSwitch, pieceSwitchCheckPath, filterOutWhenChecked, filterOutSameColor, getOppositeColor };
+// helper functions for restrict king
+
+const isDuplicate = (array, valueToAdd) => {
+    for (let i = 0; i < array.length; i++) {
+        if (
+            array[i][0] === valueToAdd[0] &&
+            array[i][1] === valueToAdd[1]
+        ) {
+            return true
+        };
+    };
+    return false;
+};
+
+const intoArray = (coveredByOppositeElements) => {
+    const result = [];
+    for (let i = 0; i < coveredByOppositeElements.length; i++) {
+        for (let index = 0; index < coveredByOppositeElements[i].coveredSquaresBySpecificPiece.length; index++) {
+            if (!isDuplicate(result, coveredByOppositeElements[i].coveredSquaresBySpecificPiece[index])) {
+                result.push(coveredByOppositeElements[i].coveredSquaresBySpecificPiece[index]);
+            };
+        };
+    };
+    return result;
+};
+
+//
+
+const restrictKing = (squareArray, coveredByOpposite) => {
+    const result = [];
+    coveredByOpposite = intoArray(coveredByOpposite);
+    for (let indexSquareArray = 0; indexSquareArray < squareArray.length; indexSquareArray++) {
+        for (let indexcoveredByOpposite = 0; indexcoveredByOpposite < coveredByOpposite.length; indexcoveredByOpposite++) {
+            if ( !isDuplicate(coveredByOpposite, squareArray[indexSquareArray])) {
+                    if (!isDuplicate(result, [...squareArray[indexSquareArray]])) {
+                        result.push([...squareArray[indexSquareArray]]);
+                    };
+            };
+        };
+    };
+    return result;
+};
+
+module.exports = {  pieceSwitch,
+                    pieceSwitchCheckPath, 
+                    filterOutWhenChecked, 
+                    filterOutSameColor, 
+                    getOppositeColor,
+                    restrictKing
+                };
