@@ -1,3 +1,11 @@
+const getOppositeColor = (pieceColor) => {
+    if (pieceColor === 'w') {
+        return 'bK';
+    } else {
+        return 'wK';
+    };
+};
+
 const pieceSwitch = (x, y, This, pieceType, pieceColor) => {
     const coveredSquares = [];
 
@@ -102,13 +110,10 @@ const pieceSwitch = (x, y, This, pieceType, pieceColor) => {
     return coveredSquares;
 };
 
-// helper functions for pieceSwitchCheckPath()
-
-//
 const pieceSwitchCheckPath = (pieceData) => {
     const checkPath = [pieceData['coords']]; // are the squares which can brake the check by either blocking or capturing the piece
     const coveredSquares = pieceData.coveredSquaresBySpecificPiece;
-    const oppositeColoredKing = (()=>{if (pieceData['piece'][0] === 'w') {return 'bK'} else {return 'wK'};})(); 
+    const oppositeColoredKing = getOppositeColor(pieceData['piece'][0]); 
 
     const distance = ((pieceData['coords'][0] - pieceData['checksAt'][0])**2) * ((pieceData['coords'][1] - pieceData['checksAt'][1])**2);
     if (distance === 1) {
@@ -140,4 +145,27 @@ const pieceSwitchCheckPath = (pieceData) => {
     }
 };
 
-module.exports = { pieceSwitch, pieceSwitchCheckPath};
+const filterOutWhenChecked = (squareArray, checkPath) => {
+    const result = [];
+    for (let indexSquareArray = 0; indexSquareArray < squareArray.length; indexSquareArray++) {
+        for (let indexCheckpath = 0; indexCheckpath < checkPath.length; indexCheckpath++) {
+            if ( squareArray[indexSquareArray][0] === checkPath[indexCheckpath][0] &&
+                 squareArray[indexSquareArray][1] === checkPath[indexCheckpath][1] ) {
+                    result.push([...squareArray[indexSquareArray]]);
+            };
+        };
+    };
+    return result;
+};
+
+const filterOutSameColor = (squareArray, pieceColor) => {
+    const result = [];
+    for (let indexSquareArray = 0; indexSquareArray < squareArray.length; indexSquareArray++) {
+        if (squareArray[indexSquareArray][2][0] !== pieceColor) {
+            result.push([...squareArray[indexSquareArray]]);
+        };
+    };
+    return result;
+};
+
+module.exports = { pieceSwitch, pieceSwitchCheckPath, filterOutWhenChecked, filterOutSameColor, getOppositeColor };

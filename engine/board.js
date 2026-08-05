@@ -1,4 +1,9 @@
-const { pieceSwitch, pieceSwitchCheckPath } = require("./pieceSwitch");
+const { pieceSwitch, 
+        pieceSwitchCheckPath, 
+        filterOutWhenChecked, 
+        filterOutSameColor,
+        getOppositeColor
+    } = require("./helper.js");
 
 class game {
     constructor() {
@@ -17,21 +22,23 @@ class game {
             for example:    wK => white King
                             bQ => black Queen
         */
-        this._board = {
+        this.board = {
             '8':    {'1': 'bR','2': 'bN','3': 'bB','4': 'bQ','5': 'bQ','6': 'bB','7': 'bN','8': 'bR'},
-            '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': false,'6': 'bP','7': 'bP','8': 'bP'},
+            '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
             '6':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '5':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '4':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '3':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '2':    {'1': 'wP','2': 'wP','3': 'bQ','4': 'wP','5': false,'6': 'wP','7': 'wP','8': 'wP'},
-            '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wK','5': 'wK','6': 'wB','7': 'wN','8': 'wR'}
+            '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'wP','5': false,'6': 'wP','7': 'wP','8': 'wP'},
+            '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wQ','5': 'wK','6': 'wB','7': 'wN','8': 'wR'}
         };
 
-        this._whiteMaterial = 39;
-        this._blackMaterial = 39;
-        this._currentToMove = 'white';
+        this.whiteMaterial = 39;
+        this.blackMaterial = 39;
+        this.currentToMove = 'w';
         this.inCheck = false;
+        this.coveredSquaresWhite = this.getCoveredSquares('w');
+        this.coveredSquaresWhite = this.getCoveredSquares('b');
     }
 
     static intoNumeric(letter) {
@@ -51,7 +58,7 @@ class game {
             if (x < 1 || x > 8 || y < 1 || y > 8) {
                 return result;
             };
-            const squareToCheck = this._board[y][x];
+            const squareToCheck = this.board[y][x];
             if (squareToCheck !== false && (squareToCheck[0] === 'w' || squareToCheck[0] === 'b')) {
                 result.push([x, y, squareToCheck]);
                 return result;
@@ -75,10 +82,10 @@ class game {
                 checksAt: [x-coordinate, y-coordinate] of the king in check
             }
         */
-        const piece = this._board[y][x];
+        const piece = this.board[y][x];
         const pieceColor = piece[0];
-        const oppositeColoredKing = (()=>{if (pieceColor === 'w') {return 'bK'} else {return 'wK'};})(); 
-        const pieceType = piece[1]; // getting the second letter of the string to identify the piece
+        const pieceType = piece[1];
+        const oppositeColoredKing = getOppositeColor(pieceColor);
         const coveredSquares = pieceSwitch(x, y, this, pieceType, pieceColor);
         
         const toReturn = {
@@ -101,13 +108,13 @@ class game {
         return toReturn
     }
 
-    getCoveredSquares(pieceColor) { // returns the number of the total squares, which are in sight of all the pieces of one of the colors
+    getCoveredSquares(pieceColor) { // returns an array of all pieces, which are in sight of all the pieces of one of the colors
         let currentPiece;
         let result = [];
 
         for (let x = 1; x <= 8; x++) {
             for (let y = 1; y <= 8; y++) {
-                currentPiece = this._board[y][x];
+                currentPiece = this.board[y][x];
                 if (currentPiece[0] === pieceColor) {
                     result.push(this.getCoveredSquaresBySpecificPiece(x, y));
                 };
@@ -116,36 +123,50 @@ class game {
         return result;
     } 
 
-    updateInCheck() {
-        this.getCoveredSquares('w');
-        this.getCoveredSquares('b');
+    updateBoard() {
+        this.inCheck = false;
+        this.coveredSquaresWhite = this.getCoveredSquares('w');
+        this.coveredSquaresWhite = this.getCoveredSquares('b');
         return this.inCheck;
     }
 
     getLegalMovesOfSpecificPiece(x, y) {
-        const piece = this._board[y][x]; 
-        const pieceColor = piece[0];
-        const pieceType = piece[1];
-        const legal = [];
+        /*
+            returns the legal moves in the current format
+                [{
+                    coords: [x, y], //the piece that holds the legal moves
+                    piece: '${color}${type}',
+                    legalMoves: [[x ,y, value of the square], ...] //all the squares in this format if no move is available this array will be empty
+                }]
+        */ 
+        const piece = this.getCoveredSquaresBySpecificPiece(x, y);
+        const oppositeColor = getOppositeColor(piece.piece[0]);
 
-        const check = this.updateInCheck();
+        // for testing
+        //this.updateBoard();
 
-        switch(pieceType) {
+        // for debugging
+        if (this.inCheck) {
+            if (this.inCheck.checks[0] !== this.currentToMove) {
+                console.log('#########');
+                console.log(`WARNING currently in check ${this.inCheck.checks}, although ${this.currentToMove} is expected to move`)
+                console.log('#########');
+            };
+        };
+        // for debugging 
+
+        switch(piece.piece[1]) {
             case  'K':
-                break;
-            case  'Q':
-                break;
-            case  'R':
-                break;
-            case  'B':
-                break;
-            case  'N':
                 break;
             case  'P':
                 break;
-        }
-
-        return piece;
+            default:
+                piece.legal = filterOutSameColor(piece.coveredSquaresBySpecificPiece, piece.piece[0]);
+                if (this.inCheck) {
+                    piece.legal = filterOutWhenChecked(piece.legal, this.inCheck.checkPath);
+                };
+                return piece;
+        };
     }
 };
 
@@ -157,8 +178,12 @@ const test = new game();
 
 //console.log(test.getLegalMovesOfSpecificPiece(1,8)); 
 
-console.log(test.getCoveredSquaresBySpecificPiece(5,8));
-console.log(test.getCoveredSquaresBySpecificPiece(3,2));
+//sconsole.log(test.getCoveredSquaresBySpecificPiece(5,8));
+//console.log(test.getCoveredSquaresBySpecificPiece(3,2));
+
+//console.log(test.getCoveredSquaresBySpecificPiece(6,1));
+console.log(test.getLegalMovesOfSpecificPiece(4,1));
+//console.log(test.coveredSquaresWhite);
 //console.log(test.getCoveredSquaresBySpecificPiece(4,1));
 //console.log(test.getCoveredSquaresBySpecificPiece(3,1).coveredSquaresBySpecificPiece.length);
 
