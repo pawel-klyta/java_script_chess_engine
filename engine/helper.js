@@ -168,7 +168,21 @@ const filterOutSameColor = (squareArray, pieceColor) => {
     return result;
 };
 
-// helper functions for restrict king
+const filterOutEmppty = (squareArray) => {
+    if (squareArray.length === 0) {
+        console.log('triggered');
+        return squareArray;
+    };
+    const result = [];
+    for (let indexSquareArray = 0; indexSquareArray < squareArray.length; indexSquareArray++) {
+        if (squareArray[indexSquareArray][2] !== false) {
+            result.push([...squareArray[indexSquareArray]]);
+        };
+    };
+    return result;
+};
+
+// helper functions for restrictKing()
 
 const isDuplicate = (array, valueToAdd) => {
     for (let i = 0; i < array.length; i++) {
@@ -216,5 +230,7 @@ module.exports = {  pieceSwitch,
                     filterOutWhenChecked, 
                     filterOutSameColor, 
                     getOppositeColor,
-                    restrictKing
+                    restrictKing,
+                    filterOutEmppty,
+                    isDuplicate
                 };
