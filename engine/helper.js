@@ -170,7 +170,6 @@ const filterOutSameColor = (squareArray, pieceColor) => {
 
 const filterOutEmppty = (squareArray) => {
     if (squareArray.length === 0) {
-        console.log('triggered');
         return squareArray;
     };
     const result = [];
@@ -225,6 +224,26 @@ const restrictKing = (squareArray, coveredByOpposite) => {
     return result;
 };
 
+const getCastleMoves = (This, color) => {
+    const result = [];
+    if (color === 'w') {
+        if ((This.rightToCastleShortW === true) && (This.board[1][6] === false) && (This.board[1][7]) === false) {
+            result.push([7, 1, 'castle', 'short']);
+        };
+        if (This.rightToCastleLongW === true && This.board[1][4] === false && This.board[1][3] === false && This.board[1][2] === false) {
+            result.push([3, 1, 'castle', 'long']);
+        };
+    } else {
+        if (This.rightToCastleShortB === true && This.board[8][6] === false && This.board[8][7] === false) {
+            result.push([7, 8, 'castle', 'short']);
+        };
+        if (This.rightToCastleLongB === true && This.board[8][4] === false && This.board[8][3] === false && This.board[8][2] === false) {
+            result.push([3, 8, 'castle', 'long']);
+        };
+    }
+    return result;
+}; 
+
 module.exports = {  pieceSwitch,
                     pieceSwitchCheckPath, 
                     filterOutWhenChecked, 
@@ -232,5 +251,6 @@ module.exports = {  pieceSwitch,
                     getOppositeColor,
                     restrictKing,
                     filterOutEmppty,
-                    isDuplicate
+                    isDuplicate,
+                    getCastleMoves
                 };

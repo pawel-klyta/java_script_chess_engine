@@ -5,10 +5,9 @@ const { pieceSwitch,
         getOppositeColor,
         restrictKing,
         filterOutEmppty,
-        isDuplicate
+        isDuplicate,
+        getCastleMoves
     } = require("./helper.js");
-
-const debug = false;
 
 class game {
     constructor() {
@@ -28,14 +27,14 @@ class game {
                             bQ => black Queen
         */
         this.board = {
-            '8':    {'1': 'bR','2': 'bN','3': 'bB','4': 'bQ','5': 'bK','6': 'bB','7': 'bN','8': 'bR'},
+            '8':    {'1': 'bR','2': false,'3': false,'4': false,'5': 'bK','6': false,'7': false,'8': 'bR'},
             '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
             '6':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '5':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '4':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
+            '4':    {'1': 'bP','2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '3':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'wP','5': 'wQ','6': 'wP','7': 'wP','8': 'wP'},
-            '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wQ','5': 'wK','6': 'wB','7': 'wN','8': 'wR'}
+            '1':    {'1': 'wR','2': false,'3': false,'4': false,'5': 'wK','6': false,'7': false,'8': 'wR'}
         };
 
         this.whiteMaterial = 39;
@@ -44,6 +43,12 @@ class game {
         this.inCheck = false;
         this.doubleCheck = false;
         this.enPassant = false;
+
+        this.rightToCastleShortW = true;
+        this.rightToCastleShortB = true;
+        this.rightToCastleLongW = true;
+        this.rightToCastleLongB = true;
+
         this.coveredSquaresWhite = this.getCoveredSquares('w');
         this.coveredSquaresBlack = this.getCoveredSquares('b');
     }
@@ -149,15 +154,6 @@ class game {
             {
                 coords: [x-coordinate, y-coordinate] //of the given piece,
                 piece: '${colorIndicator}${piecetypeIndicator}',
-                // if debug === true 
-                    coveredSquaresBySpecificPiece: [
-                        [ x-coordinate, y-coordinate, 'string of piece the given piece has in sight with specified color of the looked at piece with [0] and [1] specifieng the type' ], // can be multiple squares
-                        [ 4, 1, 'wQ' ]
-                    ]
-                    checks: '${string which indicates the king the piece checks}' or false if no king in check,
-                    checksAt: [x-coordinate, y-coordinate], of the king in check
-                    checkPath: [[x-coordinate, y-coordinate], array with the squares],
-                // until here
                 legal: [
                     [ x-coordinate, y-coordinate, 'string of the given piece that has legal moves on the given squares with specified color of the looked at piece with [0] and [1] specifieng the type' ], // can be multiple squares
                     [ 4, 1, 'wQ' ]
@@ -167,24 +163,13 @@ class game {
         const piece = this.getCoveredSquaresBySpecificPiece(x, y);
         const oppositeColor = getOppositeColor(piece.piece[0]);
 
-        // for testing
-        //this.updateBoard();
-
-        // for debugging
-        if (this.inCheck) {
-            if (this.inCheck.checks[0] !== this.currentToMove) {
-                console.log('#########');
-                console.log(`WARNING currently in check ${this.inCheck.checks}, although ${this.currentToMove} is expected to move`)
-                console.log('#########');
-            };
-        };
-        // for debugging 
-
         piece.legal = filterOutSameColor(piece.coveredSquaresBySpecificPiece, piece.piece[0]);
         switch(piece.piece[1]) {
             case  'K':
+                piece.legal.push(...getCastleMoves(this, piece.piece[0]));
+
                 let coveredByOpposite = this.coveredSquaresBlack;
-                if (oppositeColor === 'w') {
+                if (oppositeColor[0] === 'w') {
                     coveredByOpposite = this.coveredSquaresWhite;
                 };
                 piece.legal = restrictKing(piece.legal, coveredByOpposite);
@@ -223,12 +208,10 @@ class game {
                 };
                 break;
         };
-        if (debug === false) {
-            delete(piece.coveredSquaresBySpecificPiece);
-            delete(piece.checks);
-            delete(piece.checkPath);
-            delete(piece.checksAt);
-        };
+        delete(piece.coveredSquaresBySpecificPiece);
+        delete(piece.checks);
+        delete(piece.checkPath);
+        delete(piece.checksAt);
         this.validateAllLegalMovesOfGivenPiece(piece);
         return piece;
     }
@@ -241,16 +224,25 @@ class game {
                 move: [x, y, '${color}${type}'] an array conatining the destination square and the piece which is standing there
             } 
         */
-        if (move.piece[0] !== this.currentToMove) {
-            if (debug === false) {
-                throw new Error('wrong player moved');
-            } else {
-                console.log('Warning! wrong player moved')
+        if (move.move[2] === 'castle') {
+            let yCoordCastle = 8;
+            if (move.piece[0] === 'w') {
+                yCoordCastle = 1;
             };
+            let add = 1;
+            if (move.move[3] === 'long') {
+                add = -1;
+                this.board[yCoordCastle][1] = false;
+            } else {
+                this.board[yCoordCastle][8] = false;
+            };
+            this.board[move.coords[1]][move.coords[0]] = false;
+            this.board[move.coords[1]][move.coords[0] + add] = `${move.piece[0]}R`;
+            this.board[move.move[1]][move.move[0]] = move.piece;
+        } else {
+            this.board[move.coords[1]][move.coords[0]] = false;
+            this.board[move.move[1]][move.move[0]] = move.piece;
         };
-
-        this.board[move.coords[1]][move.coords[0]] = false;
-        this.board[move.move[1]][move.move[0]] = move.piece;
     }
 
     simulateMove(move) { // return true if move was legal, and false if not
@@ -265,9 +257,27 @@ class game {
         if (this.inCheck) {
             test = this.inCheck.checks[0] === move.piece[0];
         }
-
-        this.board[move.coords[1]][move.coords[0]] = move.piece;
-        this.board[move.move[1]][move.move[0]] = move.move[2];
+        if (move.move[2] === 'castle') {
+            let yCoordCastle = 8;
+            if (move.piece[0] === 'w') {
+                yCoordCastle = 1;
+            };
+            let add = 1;
+            if (move.move[3] === 'long') {
+                this.board[yCoordCastle][1] = `${move.piece[0]}R`;
+                add = -1;
+            } else {
+                this.board[yCoordCastle][8] = `${move.piece[0]}R`;
+            };
+            this.board[move.coords[1]][move.coords[0]] = move.piece;
+            this.board[move.coords[1]][move.coords[0] + add] = false;
+            this.board[move.move[1]][move.move[0]] = false;
+        } else if (move.move[2] === 'enPassant') {
+            return;
+        } else {
+            this.board[move.coords[1]][move.coords[0]] = move.piece;
+            this.board[move.move[1]][move.move[0]] = move.move[2];
+        };
         this.inCheck = previous;
 
         if (test) {
@@ -312,38 +322,39 @@ class game {
         return result;
     } 
 
-    makeMove(move) {
-        // enPassant detection if pawn moves two squares for one move
-        return;
+    makeMove(move) { // passed in move has to be valid
+        this.makeMoveSoft(move);
+        this.updateBoard();
+        if (move.piece[0] === 'w') {
+            if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 1)) {
+                this.rightToCastleLongW = false;
+            };
+            if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 1)) {
+                this.rightToCastleShortW = false;
+            };
+        } else {
+            if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 8)) {
+                this.rightToCastleLongB = false;
+            };
+            if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 8)) {
+                this.rightToCastleLongB = false;
+            };
+        };
+        let yCoordEnPassant = 3;
+        let yDifference = -2;
+            if (move.piece[0] === 'b') {
+                yCoordEnPassant = 6;
+                yDifference = 2;
+            };
+        if (move.piece[1] === 'P' && (move.coords[1] - move.move[1]) === yDifference ) {
+            this.enPassant = [move.coords[0], yCoordEnPassant, 'enPassant'];
+        };
+        if (this.currentToMove === 'w') {
+            this.currentToMove = 'b';
+        } else {
+            this.currentToMove = 'w';
+        }
     }
 };
 
 module.exports = {game};
-
-// some tests
-
-const test = new game();
-
-//console.log(test.getLegalMovesOfSpecificPiece(1,8)); 
-
-//console.log(test.getCoveredSquaresBySpecificPiece(5,8));
-//console.log(test.getCoveredSquaresBySpecificPiece(3,2));
-
-//console.log(test.getCoveredSquaresBySpecificPiece(6,1));
-//console.log(test.getLegalMovesOfSpecificPiece(3,4));
-console.log(test.getAllLegalMovesByColor('w'))
-//console.log(test.board);
-//console.log(`is move really valid? = ${test.simulateMove({ coords: [3,4], piece: 'wP', move: [2, 5, false]})}`)
-//console.log(test.board);
-//console.log(test.getLegalMovesOfSpecificPiece(4,1));
-//console.log(test.getLegalMovesOfSpecificPiece(5,1));
-//console.log(test.inCheck);
-//console.log(test.coveredSquaresWhite);
-//console.log(test.getCoveredSquaresBySpecificPiece(4,1));
-//console.log(test.getCoveredSquaresBySpecificPiece(3,1).coveredSquaresBySpecificPiece.length);
-
-//console.log(test.getCoveredSquares('w')[8]);
-
-// console.log(test.getCoveredSquares('w'));
-
-//console.log(test.inCheck);
