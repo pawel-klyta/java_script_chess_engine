@@ -1,12 +1,16 @@
-const { pieceSwitch, 
+const {  pieceSwitch,
         pieceSwitchCheckPath, 
         filterOutWhenChecked, 
-        filterOutSameColor,
+        filterOutSameColor, 
         getOppositeColor,
         restrictKing,
         filterOutEmppty,
         isDuplicate,
-        getCastleMoves
+        getCastleMoves,
+        updateEnPassantSquare,
+        updateCurrentToMove,
+        updateRightToCastle,
+        getValue
     } = require("./helper.js");
 
 class game {
@@ -28,13 +32,13 @@ class game {
         */
         this.board = {
             '8':    {'1': 'bR','2': false,'3': false,'4': false,'5': 'bK','6': false,'7': false,'8': 'bR'},
-            '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
+            '7':    {'1': 'wP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
             '6':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '5':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '4':    {'1': 'bP','2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
+            '4':    {'1': false,'2': 'wB','3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '3':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'wP','5': 'wQ','6': 'wP','7': 'wP','8': 'wP'},
-            '1':    {'1': 'wR','2': false,'3': false,'4': false,'5': 'wK','6': false,'7': false,'8': 'wR'}
+            '2':    {'1': 'bP','2': 'wP','3': 'wP','4': 'wP','5': 'wQ','6': 'wP','7': 'wP','8': 'wP'},
+            '1':    {'1': false,'2': false,'3': false,'4': false,'5': 'wK','6': false,'7': false,'8': false}
         };
 
         this.whiteMaterial = 39;
@@ -120,21 +124,27 @@ class game {
                 break;
             };
         };
-
         return toReturn
     }
 
     getCoveredSquares(pieceColor) { // returns an array of all pieces, which are in sight of all the pieces of one of the colors
         let currentPiece;
         let result = [];
+        let newMaterialCount = 0;
 
         for (let x = 1; x <= 8; x++) {
             for (let y = 1; y <= 8; y++) {
                 currentPiece = this.board[y][x];
                 if (currentPiece[0] === pieceColor) {
                     result.push(this.getCoveredSquaresBySpecificPiece(x, y));
+                    newMaterialCount += getValue(currentPiece[1]);
                 };
             };
+        };
+        if (pieceColor === 'w') {
+            this.whiteMaterial = newMaterialCount;
+        } else {
+            this.blackMaterial = newMaterialCount;
         };
         return result;
     } 
@@ -185,11 +195,33 @@ class game {
                         }
                     };
                     piece.legal = filterOutEmppty(piece.legal);
-
-                    if (this.board[y + 1][x] === false) {
-                        piece.legal.push([x, y + 1, false]);
-                        if (y === 2 && this.board[y + 2][x] === false) {
-                            piece.legal.push([x, y + 2, false]);
+                    if (piece.piece[0] === 'w') {
+                        if (this.board[y + 1][x] === false) {
+                            if (y === 7) {
+                                piece.legal.push([x, y + 1, false, `${piece.piece[0]}Q`]);
+                                piece.legal.push([x, y + 1, false, `${piece.piece[0]}R`]);
+                                piece.legal.push([x, y + 1, false, `${piece.piece[0]}B`]);
+                                piece.legal.push([x, y + 1, false, `${piece.piece[0]}N`]);
+                            } else {
+                                piece.legal.push([x, y + 1, false]);
+                            };
+                            if (y === 2 && this.board[y + 2][x] === false) {
+                                piece.legal.push([x, y + 2, false]);
+                            };
+                        };
+                    } else { 
+                        if (this.board[y - 1][x] === false) {
+                            if (y === 2) {
+                                piece.legal.push([x, y - 1, false, `${piece.piece[0]}Q`]);
+                                piece.legal.push([x, y - 1, false, `${piece.piece[0]}R`]);
+                                piece.legal.push([x, y - 1, false, `${piece.piece[0]}B`]);
+                                piece.legal.push([x, y - 1, false, `${piece.piece[0]}N`]);
+                            } else {
+                                piece.legal.push([x, y - 1, false]);
+                            };
+                            if (y === 7 && this.board[y - 2][x] === false) {
+                                piece.legal.push([x, y - 2, false]);
+                            };
                         };
                     };
                 }
@@ -224,7 +256,10 @@ class game {
                 move: [x, y, '${color}${type}'] an array conatining the destination square and the piece which is standing there
             } 
         */
-        if (move.move[2] === 'castle') {
+        if (move.move.length === 4) {
+            this.board[move.coords[1]][move.coords[0]] = false;
+            this.board[move.move[1]][move.move[0]] = move.move[3];
+        } else if (move.move[2] === 'castle') {
             let yCoordCastle = 8;
             if (move.piece[0] === 'w') {
                 yCoordCastle = 1;
@@ -258,6 +293,8 @@ class game {
             test = this.inCheck.checks[0] === move.piece[0];
         }
         if (move.move[2] === 'castle') {
+            console.log('proplem');
+            console.log(move)
             let yCoordCastle = 8;
             if (move.piece[0] === 'w') {
                 yCoordCastle = 1;
@@ -325,35 +362,9 @@ class game {
     makeMove(move) { // passed in move has to be valid
         this.makeMoveSoft(move);
         this.updateBoard();
-        if (move.piece[0] === 'w') {
-            if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 1)) {
-                this.rightToCastleLongW = false;
-            };
-            if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 1)) {
-                this.rightToCastleShortW = false;
-            };
-        } else {
-            if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 8)) {
-                this.rightToCastleLongB = false;
-            };
-            if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 8)) {
-                this.rightToCastleLongB = false;
-            };
-        };
-        let yCoordEnPassant = 3;
-        let yDifference = -2;
-            if (move.piece[0] === 'b') {
-                yCoordEnPassant = 6;
-                yDifference = 2;
-            };
-        if (move.piece[1] === 'P' && (move.coords[1] - move.move[1]) === yDifference ) {
-            this.enPassant = [move.coords[0], yCoordEnPassant, 'enPassant'];
-        };
-        if (this.currentToMove === 'w') {
-            this.currentToMove = 'b';
-        } else {
-            this.currentToMove = 'w';
-        }
+        updateRightToCastle(this, move);
+        updateEnPassantSquare(this, move);
+        updateCurrentToMove(this, move);
     }
 };
 

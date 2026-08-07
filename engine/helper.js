@@ -181,8 +181,6 @@ const filterOutEmppty = (squareArray) => {
     return result;
 };
 
-// helper functions for restrictKing()
-
 const isDuplicate = (array, valueToAdd) => {
     for (let i = 0; i < array.length; i++) {
         if (
@@ -206,8 +204,6 @@ const intoArray = (coveredByOppositeElements) => {
     };
     return result;
 };
-
-//
 
 const restrictKing = (squareArray, coveredByOpposite) => {
     const result = [];
@@ -244,6 +240,55 @@ const getCastleMoves = (This, color) => {
     return result;
 }; 
 
+const updateEnPassantSquare = (This, move) => {
+    let yCoordEnPassant = 3;
+    let yDifference = -2;
+    if (move.piece[0] === 'b') {
+        yCoordEnPassant = 6;
+        yDifference = 2;
+    };
+    if (move.piece[1] === 'P' && (move.coords[1] - move.move[1]) === yDifference ) {
+        This.enPassant = [move.coords[0], yCoordEnPassant, 'enPassant'];
+    };
+};
+    
+const updateCurrentToMove = (This, move) => {
+    if (This.currentToMove === 'w') {
+        This.currentToMove = 'b';
+    } else {
+        This.currentToMove = 'w';
+    }
+};
+
+const updateRightToCastle = (This, move) => {
+    if (move.piece[0] === 'w') {
+            if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 1)) {
+                This.rightToCastleLongW = false;
+            };
+            if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 1)) {
+                This.rightToCastleShortW = false;
+            };
+        } else {
+            if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 8)) {
+                This.rightToCastleLongB = false;
+            };
+            if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 8)) {
+                This.rightToCastleLongB = false;
+            };
+        };
+};
+
+const getValue = (pieceType) => {
+    switch (pieceType) {
+        case 'Q': return 9;
+        case 'R': return 5;
+        case 'B': return 3.1;
+        case 'N': return 3;
+        case 'P': return 1;
+        case 'K': return 0;
+    };
+};
+
 module.exports = {  pieceSwitch,
                     pieceSwitchCheckPath, 
                     filterOutWhenChecked, 
@@ -252,5 +297,9 @@ module.exports = {  pieceSwitch,
                     restrictKing,
                     filterOutEmppty,
                     isDuplicate,
-                    getCastleMoves
+                    getCastleMoves,
+                    updateEnPassantSquare,
+                    updateCurrentToMove,
+                    updateRightToCastle,
+                    getValue
                 };
