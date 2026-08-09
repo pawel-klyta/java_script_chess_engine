@@ -13,7 +13,7 @@ const {  pieceSwitch,
         getValue
     } = require("./helper.js");
 
-class game {
+class board {
     constructor() {
         /*
             false => free square
@@ -368,4 +368,4 @@ class game {
     }
 };
 
-module.exports = {game};
+module.exports = { board };
