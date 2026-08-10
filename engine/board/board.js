@@ -31,14 +31,14 @@ class board {
                             bQ => black Queen
         */
         this.board = {
-            '8':    {'1': 'bR','2': false,'3': false,'4': false,'5': 'bK','6': false,'7': false,'8': 'bR'},
-            '7':    {'1': 'wP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
+            '8':    {'1': 'bR','2': 'bN','3': 'bB','4': 'bQ','5': 'bK','6': 'bB','7': 'bN','8': 'bR'},
+            '7':    {'1': 'bP','2': 'bP','3': 'bP','4': 'bP','5': 'bP','6': 'bP','7': 'bP','8': 'bP'},
             '6':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '5':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '4':    {'1': false,'2': 'wB','3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
+            '4':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
             '3':    {'1': false,'2': false,'3': false,'4': false,'5': false,'6': false,'7': false,'8': false},
-            '2':    {'1': 'bP','2': 'wP','3': 'wP','4': 'wP','5': 'wQ','6': 'wP','7': 'wP','8': 'wP'},
-            '1':    {'1': false,'2': false,'3': false,'4': false,'5': 'wK','6': false,'7': false,'8': false}
+            '2':    {'1': 'wP','2': 'wP','3': 'wP','4': 'wP','5': 'wP','6': 'wP','7': 'wP','8': 'wP'},
+            '1':    {'1': 'wR','2': 'wN','3': 'wB','4': 'wQ','5': 'wK','6': 'wB','7': 'wN','8': 'wR'}
         };
 
         this.whiteMaterial = 39;
