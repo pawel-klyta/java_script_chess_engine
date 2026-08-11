@@ -55,6 +55,9 @@ class board {
 
         this.coveredSquaresWhite = this.getCoveredSquares('w');
         this.coveredSquaresBlack = this.getCoveredSquares('b');
+
+        this.legalMovesWhite = this.getAllLegalMovesByColor('w');
+        this.legalMovesBlack = this.getAllLegalMovesByColor('b');
     }
 
     static intoNumeric(letter) {
@@ -155,6 +158,8 @@ class board {
         this.enPassant = false;
         this.coveredSquaresWhite = this.getCoveredSquares('w');
         this.coveredSquaresBlack = this.getCoveredSquares('b');
+        this.legalMovesWhite = this.getAllLegalMovesByColor('w');
+        this.legalMovesBlack = this.getAllLegalMovesByColor('b');
         return this.inCheck;
     }
 
