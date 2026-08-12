@@ -57,7 +57,7 @@ class board {
         this.coveredSquaresBlack = this.getCoveredSquares('b');
 
         this.legalMovesWhite = this.getAllLegalMovesByColor('w');
-        this.legalMovesBlack = this.getAllLegalMovesByColor('b');
+        this.legalMovesBlack = [];
     }
 
     static intoNumeric(letter) {
@@ -158,9 +158,17 @@ class board {
         this.enPassant = false;
         this.coveredSquaresWhite = this.getCoveredSquares('w');
         this.coveredSquaresBlack = this.getCoveredSquares('b');
-        this.legalMovesWhite = this.getAllLegalMovesByColor('w');
-        this.legalMovesBlack = this.getAllLegalMovesByColor('b');
         return this.inCheck;
+    }
+
+    updateMoves() {
+        if (this.currentToMove === 'w') {
+            this.legalMovesWhite = this.getAllLegalMovesByColor('w');
+            this.legalMovesBlack = [];
+        } else {
+            this.legalMovesWhite = [];
+            this.legalMovesBlack = this.getAllLegalMovesByColor('b');
+        };
     }
 
     getLegalMovesOfSpecificPiece(x, y) {
@@ -196,8 +204,10 @@ class board {
                 } else {
                     if (this.enPassant) {
                         if (isDuplicate(piece.legal, this.enPassant)) {
-                            enPassantSquare = this.enPassant;
-                        }
+                            if ((this.enPassant[1] === 3 && piece.piece[0] === 'b') || (this.enPassant[1] === 6 && piece.piece[0] === 'w')) {
+                                enPassantSquare = this.enPassant;
+                            };                        
+                        };
                     };
                     piece.legal = filterOutEmppty(piece.legal);
                     if (piece.piece[0] === 'w') {
@@ -366,10 +376,11 @@ class board {
 
     makeMove(move) { // passed in move has to be valid
         this.makeMoveSoft(move);
+        updateCurrentToMove(this, move);
         this.updateBoard();
         updateRightToCastle(this, move);
         updateEnPassantSquare(this, move);
-        updateCurrentToMove(this, move);
+        this.updateMoves();
     }
 };
 

@@ -9,11 +9,22 @@ const cors = require('cors');
 const board_router = require('./board_router.js');
 
 // cors
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3001/' }));
+
 // parse body
 app.use(json());
+
+
+// serve static
+app.use(express.static('../frontend'))
+
 // routers
 app.use('/board', board_router);
+
+// error handling
+app.use((err, req, res, next) => {
+    res.status(500).send(err.message);
+});
 
 // server start
 app.listen(PORT, (req, res, next) => {
