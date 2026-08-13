@@ -115,8 +115,17 @@ const pieceSwitchCheckPath = (pieceData) => {
     const coveredSquares = pieceData.coveredSquaresBySpecificPiece;
     const oppositeColoredKing = getOppositeColor(pieceData['piece'][0]); 
 
-    const distance = ((pieceData['coords'][0] - pieceData['checksAt'][0])**2) * ((pieceData['coords'][1] - pieceData['checksAt'][1])**2);
-    if (distance === 1) {
+    const diffSqrY = (pieceData['coords'][1] - pieceData['checksAt'][1])**2;
+    const diffSqrX = (pieceData['coords'][0] - pieceData['checksAt'][0])**2;
+    const distance1 = (() => {
+        if (((diffSqrY === 0 || diffSqrX === 0) && (diffSqrY === 1 || diffSqrX === 1)) || (diffSqrY === 1 && diffSqrX === 1)) {
+            return true;
+        } else {
+            return false;
+        };
+    })();
+
+    if (distance1) {
         return checkPath;
     }; // checks if checking piece is only one square away
 
