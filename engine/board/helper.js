@@ -273,7 +273,7 @@ const updateRightToCastle = (This, move) => {
                 This.rightToCastleLongB = false;
             };
             if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 8)) {
-                This.rightToCastleLongB = false;
+                This.rightToCastleShortB = false;
             };
         };
 };
