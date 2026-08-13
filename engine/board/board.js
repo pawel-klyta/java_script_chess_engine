@@ -271,10 +271,7 @@ class board {
                 move: [x, y, '${color}${type}'] an array conatining the destination square and the piece which is standing there
             } 
         */
-        if (move.move.length === 4) {
-            this.board[move.coords[1]][move.coords[0]] = false;
-            this.board[move.move[1]][move.move[0]] = move.move[3];
-        } else if (move.move[2] === 'castle') {
+        if (move.move[2] === 'castle') {
             let yCoordCastle = 8;
             if (move.piece[0] === 'w') {
                 yCoordCastle = 1;
@@ -289,9 +286,20 @@ class board {
             this.board[move.coords[1]][move.coords[0]] = false;
             this.board[move.coords[1]][move.coords[0] + add] = `${move.piece[0]}R`;
             this.board[move.move[1]][move.move[0]] = move.piece;
+
+        } else if (move.move.length === 4) {
+            this.board[move.coords[1]][move.coords[0]] = false;
+            this.board[move.move[1]][move.move[0]] = move.move[3];
         } else {
             this.board[move.coords[1]][move.coords[0]] = false;
             this.board[move.move[1]][move.move[0]] = move.piece;
+            if (move.move[2] === 'enPassant') {
+                if (move.piece[0] === 'w') {
+                    this.board[move.move[1] - 1][move.move[0]] = false;
+                } else {
+                    this.board[move.move[1] + 1][move.move[0]] = false;
+                };                
+            };
         };
     }
 
@@ -325,7 +333,13 @@ class board {
             this.board[move.coords[1]][move.coords[0] + add] = false;
             this.board[move.move[1]][move.move[0]] = false;
         } else if (move.move[2] === 'enPassant') {
-            return;
+            this.board[this.enPassant[1]][this.enPassant[0]] = false;
+            this.board[move.coords[1]][move.coords[0]] = move.piece;
+            if (move.piece[0] === 'w') {
+                this.board[this.enPassant[1] - 1][this.enPassant[0]] = `${oppositeColor}P`;
+            } else {
+                this.board[this.enPassant[1] + 1][this.enPassant[0]] = `${oppositeColor}P`;
+            };            
         } else {
             this.board[move.coords[1]][move.coords[0]] = move.piece;
             this.board[move.move[1]][move.move[0]] = move.move[2];
@@ -374,7 +388,7 @@ class board {
         return result;
     } 
 
-    makeMove(move) { // passed in move has to be valid
+    makeMove(move) { // passed in move has to be valid+
         this.makeMoveSoft(move);
         updateCurrentToMove(this, move);
         this.updateBoard();
