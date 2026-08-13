@@ -10,7 +10,8 @@ const {  pieceSwitch,
         updateEnPassantSquare,
         updateCurrentToMove,
         updateRightToCastle,
-        getValue
+        getValue,
+        checkCastleMoves
     } = require("./helper.js");
 
 class board {
@@ -189,13 +190,18 @@ class board {
         piece.legal = filterOutSameColor(piece.coveredSquaresBySpecificPiece, piece.piece[0]);
         switch(piece.piece[1]) {
             case  'K':
-                piece.legal.push(...getCastleMoves(this, piece.piece[0]));
-
+                if (!this.inCheck) {
+                    piece.legal.push(...getCastleMoves(this, piece.piece[0]));
+                };
+                
                 let coveredByOpposite = this.coveredSquaresBlack;
                 if (oppositeColor[0] === 'w') {
                     coveredByOpposite = this.coveredSquaresWhite;
                 };
                 piece.legal = restrictKing(piece.legal, coveredByOpposite);
+                if (!this.inCheck) {
+                    piece.legal = checkCastleMoves(piece.legal);
+                };
                 break;
             case  'P':
                 let enPassantSquare;
@@ -316,8 +322,6 @@ class board {
             test = this.inCheck.checks[0] === move.piece[0];
         }
         if (move.move[2] === 'castle') {
-            console.log('proplem');
-            console.log(move)
             let yCoordCastle = 8;
             if (move.piece[0] === 'w') {
                 yCoordCastle = 1;

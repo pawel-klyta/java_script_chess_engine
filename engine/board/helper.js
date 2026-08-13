@@ -202,6 +202,27 @@ const isDuplicate = (array, valueToAdd) => {
     return false;
 };
 
+const checkCastleMoves = (array) => {
+    const result = [];
+    let add;
+    for (let i = 0; i < array.length; i++) {
+        if (array[i][2] === 'castle') {
+            add = 1;
+            if (array[i][3] === 'short') {
+                add = -1;
+            };
+            for (let j = 0; j < array.length; j++) {
+                if ((array[i][0] + add === array[j][0]) && (array[i][1] === array[j][1])) {
+                    result.push(array[i]);
+                };
+            };
+        } else {
+            result.push(array[i]);
+        };
+    };
+    return result;
+};
+
 const intoArray = (coveredByOppositeElements) => {
     const result = [];
     for (let i = 0; i < coveredByOppositeElements.length; i++) {
@@ -310,5 +331,6 @@ module.exports = {  pieceSwitch,
                     updateEnPassantSquare,
                     updateCurrentToMove,
                     updateRightToCastle,
-                    getValue
+                    getValue,
+                    checkCastleMoves
                 };
