@@ -217,6 +217,15 @@ class board {
                     };
                     piece.legal = filterOutEmppty(piece.legal);
                     if (piece.piece[0] === 'w') {
+                        for (let i = 0; i < piece.legal.length; i++) {
+                            if (piece.legal[i][1] === 8 && piece.legal[i].length === 3)  { // if y coordinate is equal to 8, promotion squares need to be created && length check so the moves are not modified multiple times
+                                piece.legal[i].push(`${piece.piece[0]}Q`);
+                                piece.legal.push([piece.legal[i][0], piece.legal[i][1], piece.legal[i][2], `${piece.piece[0]}R`]);
+                                piece.legal.push([piece.legal[i][0], piece.legal[i][1], piece.legal[i][2], `${piece.piece[0]}B`]);
+                                piece.legal.push([piece.legal[i][0], piece.legal[i][1], piece.legal[i][2], `${piece.piece[0]}N`]);
+                            };
+                        };
+
                         if (this.board[y + 1][x] === false) {
                             if (y === 7) {
                                 piece.legal.push([x, y + 1, false, `${piece.piece[0]}Q`]);
@@ -231,6 +240,15 @@ class board {
                             };
                         };
                     } else { 
+                        for (let i = 0; i < piece.legal.length; i++) {
+                            if (piece.legal[i][1] === 1 && piece.legal[i].length === 3)  { // if y coordinate is equal to 1, promotion squares need to be created && length check so the moves are not modified multiple times
+                                piece.legal[i].push(`${piece.piece[0]}Q`);
+                                piece.legal.push([piece.legal[i][0], piece.legal[i][1], piece.legal[i][2], `${piece.piece[0]}R`]);
+                                piece.legal.push([piece.legal[i][0], piece.legal[i][1], piece.legal[i][2], `${piece.piece[0]}B`]);
+                                piece.legal.push([piece.legal[i][0], piece.legal[i][1], piece.legal[i][2], `${piece.piece[0]}N`]);
+                            };
+                        };
+
                         if (this.board[y - 1][x] === false) {
                             if (y === 2) {
                                 piece.legal.push([x, y - 1, false, `${piece.piece[0]}Q`]);
