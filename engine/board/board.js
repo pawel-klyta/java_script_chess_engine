@@ -1,18 +1,22 @@
-const {  pieceSwitch,
-        pieceSwitchCheckPath, 
-        filterOutWhenChecked, 
-        filterOutSameColor, 
-        getOppositeColor,
-        restrictKing,
-        filterOutEmppty,
-        isDuplicate,
-        getCastleMoves,
-        updateEnPassantSquare,
-        updateCurrentToMove,
-        updateRightToCastle,
-        getValue,
-        checkCastleMoves
-    } = require("./helper.js");
+const {  
+    filterOutWhenChecked, 
+    filterOutSameColor, 
+    restrictKing,
+    filterOutEmppty,
+    isDuplicate,
+    getCastleMoves,
+    updateEnPassantSquare,
+    updateCurrentToMove,
+    updateRightToCastle,
+    getValue,
+    checkCastleMoves
+} = require("./helper.js");
+
+const {
+    pieceSwitch,
+    getOppositeColor,
+    pieceSwitchCheckPath 
+} = require("./pieceSwitch.js");
 
 class board {
     constructor() {
