@@ -1,5 +1,9 @@
 const { getOppositeColor } = require("./pieceSwitch.js");
 
+const isEven = (number) => {
+    return number % 2 === 0;
+};
+
 const filterOutWhenChecked = (squareArray, checkPath) => {
     const result = [];
     for (let indexSquareArray = 0; indexSquareArray < squareArray.length; indexSquareArray++) {
@@ -176,5 +180,6 @@ module.exports = {
     updateCurrentToMove,
     updateRightToCastle,
     getValue,
-    checkCastleMoves
+    checkCastleMoves,
+    isEven
 };

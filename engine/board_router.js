@@ -1,5 +1,6 @@
 const express = require('express');
 const board_router = express.Router();
+
 const { 
     game,
     listMovesOfSpecificPiece,
@@ -27,7 +28,7 @@ board_router.param('y', (req, res, next, y) => {
 });
 
 board_router.get('/' ,(req, res, next) => {
-    res.status(200).send(game.board);
+    res.status(200).send({ board: game.board, endOfGame: game.endOfGame });
 });
 
 board_router.get('/:x/:y' ,(req, res, next) => {
@@ -37,6 +38,11 @@ board_router.get('/:x/:y' ,(req, res, next) => {
     } else {
         res.status(200).send(toSend);
     };
+});
+
+board_router.post('/new', (req, res, next) => {
+    game.newGame();
+    res.status(200).send("board was reset");
 });
 
 board_router.post('/move', (req, res, next) => {

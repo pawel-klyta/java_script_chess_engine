@@ -9,17 +9,34 @@ const {
     updateCurrentToMove,
     updateRightToCastle,
     getValue,
-    checkCastleMoves
+    checkCastleMoves,
+    isEven
 } = require("./helper.js");
 
 const {
     pieceSwitch,
     getOppositeColor,
-    pieceSwitchCheckPath 
+    pieceSwitchCheckPath
 } = require("./pieceSwitch.js");
+
+const {
+    is3TimeRepetition
+} = require("./repetitionCheck.js");
 
 class board {
     constructor() {
+        this.newGame();
+    }
+
+    static intoNumeric(letter) {
+        return letter.charCodeAt(0) - 96;
+    }
+
+    static intoLetter(number) {
+        return String.fromCharCode(number + 96);
+    }
+
+    newGame() {
         /*
             false => free square
 
@@ -63,14 +80,27 @@ class board {
 
         this.legalMovesWhite = this.getAllLegalMovesByColor('w');
         this.legalMovesBlack = [];
+
+        this.legalMovesWhiteCount = this.countLegal('w');
+        this.legalMovesBlackCount = this.countLegal('b');
+
+        this.moveCount = 0;
+        this.ruleCount50 = 0;
+        this.endOfGame = false;
     }
 
-    static intoNumeric(letter) {
-        return letter.charCodeAt(0) - 96;
-    }
-
-    static intoLetter(number) {
-        return String.fromCharCode(number + 96);
+    countLegal(color) {
+        let counter = 0;
+        let arrayToCheck = this.legalMovesWhite;
+        if (color === 'b') {
+            arrayToCheck = this.legalMovesBlack;
+        };
+        if (arrayToCheck.length !== 0) {
+            for (let i = 0; i < arrayToCheck.length; i++) {
+                counter += arrayToCheck[i]['legal'].length;
+            };
+        };
+        return counter;
     }
 
     checkSquares(square, pieceColor) {
@@ -88,6 +118,20 @@ class board {
                 return result;
             };
             result.push([x, y, false]);
+        };
+        return result;
+    }
+
+    getAllPiecesOnTheBoard(color = false) {
+        const result = [];
+        for (let x = 1; x <= 8; x++) {
+            for (let y = 1; y <= 8; y++) {
+                if (this.board[y][x]) {
+                    if (!color || this.board[y][x][0] === color) {
+                        result.push(this.board[y][x]);
+                    };
+                };
+            };
         };
         return result;
     }
@@ -173,6 +217,93 @@ class board {
         } else {
             this.legalMovesWhite = [];
             this.legalMovesBlack = this.getAllLegalMovesByColor('b');
+        };
+    }
+
+    updateCount(move) {
+        this.moveCount += 1;
+        if ((move.piece[1] === 'P') || (move.move[2].length === 2)) {
+            this.ruleCount50 = 0;
+        } else {
+            this.ruleCount50 += 1;
+        };
+        this.legalMovesWhiteCount = this.countLegal('w');
+        this.legalMovesBlackCount = this.countLegal('b');
+    }
+
+    updateEndOfGame() {
+        if (is3TimeRepetition(this.board)) {
+            this.endOfGame = 'draw';
+        } else {
+            const piecesOnBoardW = this.getCoveredSquares('w');
+            const piecesOnBoardB = this.getCoveredSquares('b');
+
+            if (this.legalMovesWhiteCount === 0 && this.legalMovesBlackCount === 0) {
+                if (this.inCheck) {
+                    this.endOfGame = `${getOppositeColor(this.inCheck.checks[0])[0]}Win`;
+                } else {
+                    this.endOfGame = 'draw';
+                };
+            } else if (piecesOnBoardW.length +  piecesOnBoardB.length === 2) {
+                this.endOfGame = 'draw';
+            } else if (piecesOnBoardW.length === 1 && piecesOnBoardB.length === 3) {
+                if (piecesOnBoardB.length === 2) {
+                    for (let i = 0; i < piecesOnBoardB.length; i++) {
+                        if (piecesOnBoardB[i]['piece'][1] === 'N' || piecesOnBoardB[i]['piece'][1] === 'B') {
+                            this.endOfGame = 'draw';
+                        };
+                    };
+                } else {
+                    let bCounterOnLight = 0;
+                    let bCounterOnDark = 0;
+
+                    for (let i = 0; i < piecesOnBoardB.length; i++) {
+                        if (piecesOnBoardB[i]['piece'][1] === 'B') {
+                            if (isEven(piecesOnBoardB[i]['coords'][0] + isEven(piecesOnBoardB[i]['coords'][1]))) {
+                                bCounterOnDark += 1;
+                            } else {
+                                bCounterOnLight += 1;
+                            };
+                        };
+                    }; 
+                    
+                    if (bCounterOnDark === 2 || bCounterOnLight === 2) {
+                        this.endOfGame === 'draw';
+                    };
+                };
+                
+            } else if (piecesOnBoardB.length === 1 && piecesOnBoardW.length === 3) {
+                if (piecesOnBoardW.length === 2) {
+                    for (let i = 0; i < piecesOnBoardW.length; i++) {
+                        if (piecesOnBoardW[i]['piece'][1] === 'N' || piecesOnBoardW[i]['piece'][1] === 'B') {
+                            this.endOfGame = 'draw';
+                        };
+                    };
+                } else {
+                    let bCounterOnLight = 0;
+                    let bCounterOnDark = 0;
+
+                    for (let i = 0; i < piecesOnBoardB.length; i++) {
+                        if (piecesOnBoardW[i]['piece'][1] === 'B') {
+                            if (isEven(piecesOnBoardW[i]['coords'][0] + isEven(piecesOnBoardW[i]['coords'][1]))) {
+                                bCounterOnDark += 1;
+                            } else {
+                                bCounterOnLight += 1;
+                            };
+                        };
+                    }; 
+                    
+                    if (bCounterOnDark === 2 || bCounterOnLight === 2) {
+                        this.endOfGame === 'draw';
+                    };
+                };
+            } else if (this.ruleCount50 === 50) {
+                this.endOfGame = 'draw';
+            };
+        };
+        if (this.endOfGame) {
+            this.legalMovesWhite = [];
+            this.legalMovesBlack = [];
         };
     }
 
@@ -414,13 +545,15 @@ class board {
         return result;
     } 
 
-    makeMove(move) { // passed in move has to be valid+
+    makeMove(move) { // passed in move has to be valid
         this.makeMoveSoft(move);
         updateCurrentToMove(this, move);
         this.updateBoard();
         updateRightToCastle(this, move);
         updateEnPassantSquare(this, move);
         this.updateMoves();
+        this.updateCount(move);
+        this.updateEndOfGame();
     }
 };
 

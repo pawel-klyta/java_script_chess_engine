@@ -6,6 +6,14 @@ const intoAlphabetic = (number) => {
     return String.fromCharCode(number + 96);
 };
 
+const inputRow = document.getElementById("inputRow");
+
+const clearInputRow = () => {
+    while (inputRow.firstChild) {
+        inputRow.removeChild(inputRow.firstChild)
+    }
+}
+
 const getLegalMovesOfSpecificPiece = async (x, y) => {
     const coordinates = '/' + x + '/' + y;
     try {
@@ -105,6 +113,7 @@ const updateBoard = async () => {
             method: 'GET'
         });
         const data = await response.json();
+
         for (let y = 1; y <= 8; y++) {
             for (let x = 1; x <= 8; x++) {
                 const xAlphabet = intoAlphabetic(x);
@@ -113,9 +122,9 @@ const updateBoard = async () => {
                     const currentPiece = currentSquare.firstChild;
                     currentSquare.removeChild(currentPiece);
                 };
-                if (data[y][x]) {
-                    const color = data[y][x][0];
-                    const pieceType = data[y][x][1];
+                if (data.board[y][x]) {
+                    const color = data.board[y][x][0];
+                    const pieceType = data.board[y][x][1];
                     const newIMG = document.createElement('img');
                     let colorWord = 'white';
                     if (color === 'b') {
@@ -128,9 +137,46 @@ const updateBoard = async () => {
                 };
             };
         };
+        if (data.endOfGame) {
+            const endOfGameMessage = document.createElement("span");
+            const playAgainButton = document.createElement("button");
+            let message;
+
+            switch (data.endOfGame) {
+                case "draw":
+                    message = "Draw!";
+                    break;
+                case "wWin":
+                    message = "White Wins!";
+                    break;
+                case "bWin":
+                    message = "Black Wins!";
+                    break;
+            }
+
+            endOfGameMessage.innerHTML = message;
+            playAgainButton.innerHTML = "Play Again!";
+            playAgainButton.id = "playAgain";
+            playAgainButton.addEventListener('click', resetBoard);
+
+            inputRow.appendChild(endOfGameMessage);
+            inputRow.appendChild(playAgainButton);
+        };
     } catch (error) {
         console.log(error);
     } ;
+};
+
+async function resetBoard() {
+    try {
+        await fetch(baseURL + Board + '/new', {
+            method: "POST"
+        });
+        await updateBoard();
+        clearInputRow();
+    } catch (error) {
+        console.log(error);
+    };
 };
 
 await updateBoard();
