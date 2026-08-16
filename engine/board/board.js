@@ -246,7 +246,7 @@ class board {
                 };
             } else if (piecesOnBoardW.length +  piecesOnBoardB.length === 2) {
                 this.endOfGame = 'draw';
-            } else if (piecesOnBoardW.length === 1 && piecesOnBoardB.length === 3) {
+            } else if (piecesOnBoardW.length === 1 && piecesOnBoardB.length <= 3) {
                 if (piecesOnBoardB.length === 2) {
                     for (let i = 0; i < piecesOnBoardB.length; i++) {
                         if (piecesOnBoardB[i]['piece'][1] === 'N' || piecesOnBoardB[i]['piece'][1] === 'B') {
@@ -259,7 +259,7 @@ class board {
 
                     for (let i = 0; i < piecesOnBoardB.length; i++) {
                         if (piecesOnBoardB[i]['piece'][1] === 'B') {
-                            if (isEven(piecesOnBoardB[i]['coords'][0] + isEven(piecesOnBoardB[i]['coords'][1]))) {
+                            if (isEven(piecesOnBoardB[i]['coords'][0] + piecesOnBoardB[i]['coords'][1])) {
                                 bCounterOnDark += 1;
                             } else {
                                 bCounterOnLight += 1;
@@ -268,11 +268,11 @@ class board {
                     }; 
                     
                     if (bCounterOnDark === 2 || bCounterOnLight === 2) {
-                        this.endOfGame === 'draw';
+                        this.endOfGame = 'draw';
                     };
                 };
                 
-            } else if (piecesOnBoardB.length === 1 && piecesOnBoardW.length === 3) {
+            } else if (piecesOnBoardB.length === 1 && piecesOnBoardW.length <= 3) {
                 if (piecesOnBoardW.length === 2) {
                     for (let i = 0; i < piecesOnBoardW.length; i++) {
                         if (piecesOnBoardW[i]['piece'][1] === 'N' || piecesOnBoardW[i]['piece'][1] === 'B') {
@@ -283,18 +283,18 @@ class board {
                     let bCounterOnLight = 0;
                     let bCounterOnDark = 0;
 
-                    for (let i = 0; i < piecesOnBoardB.length; i++) {
+                    for (let i = 0; i < piecesOnBoardW.length; i++) {
                         if (piecesOnBoardW[i]['piece'][1] === 'B') {
-                            if (isEven(piecesOnBoardW[i]['coords'][0] + isEven(piecesOnBoardW[i]['coords'][1]))) {
+                            if (isEven(piecesOnBoardW[i]['coords'][0] + piecesOnBoardW[i]['coords'][1])) {
                                 bCounterOnDark += 1;
                             } else {
                                 bCounterOnLight += 1;
                             };
                         };
                     }; 
-                    
+
                     if (bCounterOnDark === 2 || bCounterOnLight === 2) {
-                        this.endOfGame === 'draw';
+                        this.endOfGame = 'draw';
                     };
                 };
             } else if (this.ruleCount50 === 50) {
