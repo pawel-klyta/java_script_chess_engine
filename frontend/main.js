@@ -8,9 +8,20 @@ const intoAlphabetic = (number) => {
 
 const inputRow = document.getElementById("inputRow");
 
+let promoteToQueen = null;
+let promoteToRook = null;
+let promoteToBishop = null;
+let promoteToKnight = null;
+
 const clearInputRow = () => {
+    if (!inputRow.endOfGame) {
     while (inputRow.firstChild) {
-        inputRow.removeChild(inputRow.firstChild)
+            inputRow.removeChild(inputRow.firstChild)
+        }
+        promoteToQueen = null;
+        promoteToRook = null;
+        promoteToBishop = null;
+        promoteToKnight = null;
     }
 }
 
@@ -68,30 +79,94 @@ const findToMove = () => {
 };
 
 const handleClicks = async (x, y) => {
+    clearInputRow();
     const currentSquare = document.getElementById(x + y);
     if (currentSquare.isLegal) {
-        const moveObject = {
-            coords: findToMove().coords,
-            piece: findToMove().piece,
-            move: currentSquare.isLegal
-        }
-        await makeMove(moveObject)
-        clearAllMarking();
-        updateBoard();
-        return
+        if (currentSquare.isLegal.length === 1) {
+            const moveObject = {
+                coords: findToMove().coords,
+                piece: findToMove().piece,
+                move: currentSquare.isLegal[0]
+            }
+            await makeMove(moveObject)
+            clearAllMarking();
+            updateBoard();
+            return
+        } else {
+            const pieceColor = findToMove().piece[0];
+            let colorWord = 'black';
+            if (pieceColor === 'w') {
+                colorWord = "white";
+            };
+
+            promoteToQueen = document.createElement('img');
+            promoteToRook = document.createElement('img');
+            promoteToBishop = document.createElement('img');
+            promoteToKnight = document.createElement('img');
+
+            promoteToQueen.src = './assets/chess_pieces_set_0/' + colorWord + '/' + pieceColor + 'Q' + '.webp';
+            promoteToRook.src = './assets/chess_pieces_set_0/' + colorWord + '/' + pieceColor + 'R' + '.webp';
+            promoteToBishop.src = './assets/chess_pieces_set_0/' + colorWord + '/' + pieceColor + 'B' + '.webp';
+            promoteToKnight.src = './assets/chess_pieces_set_0/' + colorWord + '/' + pieceColor + 'N' + '.webp';
+
+            inputRow.appendChild(promoteToQueen);
+            inputRow.appendChild(promoteToRook);
+            inputRow.appendChild(promoteToBishop);
+            inputRow.appendChild(promoteToKnight);
+
+            promoteToQueen.addEventListener("click", () => {
+                for (let i = 0; i < currentSquare.isLegal.length; i++) {
+                    if (currentSquare.isLegal[i][3][1] === "Q") {
+                        currentSquare.isLegal = [currentSquare.isLegal[i]];
+                    };
+                };
+                handleClicks(x, y);
+            });
+            promoteToRook.addEventListener("click", () => {
+                for (let i = 0; i < currentSquare.isLegal.length; i++) {
+                    if (currentSquare.isLegal[i][3][1] === "R") {
+                        currentSquare.isLegal = [currentSquare.isLegal[i]];
+                    };
+                };
+                handleClicks(x, y);
+            });
+            promoteToBishop.addEventListener("click", () => {
+                for (let i = 0; i < currentSquare.isLegal.length; i++) {
+                    if (currentSquare.isLegal[i][3][1] === "B") {
+                        currentSquare.isLegal = [currentSquare.isLegal[i]];
+                    };
+                };
+                handleClicks(x, y);
+            });
+            promoteToKnight.addEventListener("click", () => {
+                for (let i = 0; i < currentSquare.isLegal.length; i++) {
+                    if (currentSquare.isLegal[i][3][1] === "N") {
+                        currentSquare.isLegal = [currentSquare.isLegal[i]];
+                    };
+                };
+                handleClicks(x, y);
+            });
+        };   
     };
-    clearAllMarking();
-    currentSquare.style.boxShadow = 'inset 0 0 0 2px green';
-    currentSquare.toMove = true;
-    if (!(currentSquare.hasChildNodes())) {
-        return false;
-    } else {
-        const data = await getLegalMovesOfSpecificPiece(x, y);
-        for (let index = 0; index < data.length; index++) {
-            const xAlphabet = intoAlphabetic(data[index][0]);
-            const legalSquare = document.getElementById(xAlphabet + data[index][1]);
-            legalSquare.style.boxShadow = 'inset 0 0 0 2px red';
-            legalSquare.isLegal = data[index];
+    if (!(inputRow.hasChildNodes())) {
+        clearAllMarking();
+        currentSquare.style.boxShadow = 'inset 0 0 0 2px green';
+        currentSquare.toMove = true;
+        if (!(currentSquare.hasChildNodes())) {
+            return false;
+        } else {
+            const data = await getLegalMovesOfSpecificPiece(x, y);
+            for (let index = 0; index < data.length; index++) {
+                const xAlphabet = intoAlphabetic(data[index][0]);
+                const legalSquare = document.getElementById(xAlphabet + data[index][1]);
+                legalSquare.style.boxShadow = 'inset 0 0 0 2px red';
+                
+                if (legalSquare.isLegal) {
+                    legalSquare.isLegal.push(data[index]);
+                } else {
+                    legalSquare.isLegal = [data[index]];
+                }  
+            };
         };
     };
 };
@@ -161,6 +236,8 @@ const updateBoard = async () => {
 
             inputRow.appendChild(endOfGameMessage);
             inputRow.appendChild(playAgainButton);
+
+            inputRow.endOfGame = message;
         };
     } catch (error) {
         console.log(error);
@@ -173,6 +250,7 @@ async function resetBoard() {
             method: "POST"
         });
         await updateBoard();
+        inputRow.endOfGame = false;
         clearInputRow();
     } catch (error) {
         console.log(error);

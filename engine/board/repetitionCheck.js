@@ -16,7 +16,7 @@ const is3TimeRepetition = (currentBoard) => {
     const uniqueIndex = isDuplicate(unique, currentBoardString);
     const doubleIndex = isDuplicate(double, currentBoardString);
 
-    if (uniqueIndex ||uniqueIndex === 0) {
+    if (uniqueIndex || uniqueIndex === 0) {
         double.push(unique[uniqueIndex]);
         unique.splice(uniqueIndex, 1);
     } else if (doubleIndex || doubleIndex === 0) {
