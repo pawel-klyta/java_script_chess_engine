@@ -138,7 +138,7 @@ class board {
 
     getCoveredSquaresBySpecificPiece(x, y) { 
         /*  
-            returns an element in the following schema
+            returns an object in the following schema
             {
                 coords: [x-coordinate, y-coordinate] //of the given piece,
                 piece: '${colorIndicator}${piecetypeIndicator}',
@@ -309,7 +309,7 @@ class board {
 
     getLegalMovesOfSpecificPiece(x, y) {
         /*  
-            returns an element in the following schema
+            returns an object in the following schema
             {
                 coords: [x-coordinate, y-coordinate] //of the given piece,
                 piece: '${colorIndicator}${piecetypeIndicator}',

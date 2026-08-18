@@ -73,12 +73,12 @@ const checkCastleMoves = (array) => {
     return result;
 };
 
-const intoArray = (coveredByOppositeElements) => {
+const intoArray = (coveredByOppositeObjects) => {
     const result = [];
-    for (let i = 0; i < coveredByOppositeElements.length; i++) {
-        for (let index = 0; index < coveredByOppositeElements[i].coveredSquaresBySpecificPiece.length; index++) {
-            if (!isDuplicate(result, coveredByOppositeElements[i].coveredSquaresBySpecificPiece[index])) {
-                result.push(coveredByOppositeElements[i].coveredSquaresBySpecificPiece[index]);
+    for (let i = 0; i < coveredByOppositeObjects.length; i++) {
+        for (let index = 0; index < coveredByOppositeObjects[i].coveredSquaresBySpecificPiece.length; index++) {
+            if (!isDuplicate(result, coveredByOppositeObjects[i].coveredSquaresBySpecificPiece[index])) {
+                result.push(coveredByOppositeObjects[i].coveredSquaresBySpecificPiece[index]);
             };
         };
     };
