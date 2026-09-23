@@ -7,6 +7,10 @@ const {
     makeMove
  } = require('./game.js');
 
+ const {
+    makeCpuMove
+ } = require('./engine.js')
+
  board_router.param('x', (req, res, next, x) => {
     const xNumber = x.charCodeAt(0) - 96;
     if ( xNumber >= 1 && xNumber <= 8 ) {
@@ -27,7 +31,21 @@ board_router.param('y', (req, res, next, y) => {
     
 });
 
+board_router.param('color', (req, res, next, color) => {
+    if (color === 'w' || color === 'b') {
+        req.color = color;
+        next();
+    } else {
+        return res.status(404).send("this color doesn't exist.");
+    }
+});
+
 board_router.get('/' ,(req, res, next) => {
+    res.status(200).send({ board: game.board, endOfGame: game.endOfGame });
+});
+
+board_router.get('/cpumove/:color', (req, res, next) => {
+    makeCpuMove(req.color);
     res.status(200).send({ board: game.board, endOfGame: game.endOfGame });
 });
 

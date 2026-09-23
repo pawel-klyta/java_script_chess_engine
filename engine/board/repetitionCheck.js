@@ -27,4 +27,9 @@ const is3TimeRepetition = (currentBoard) => {
     return false;
 }
 
-module.exports = { is3TimeRepetition }
+const reset3TimeRepetition = () => {
+    unique.splice(0, unique.length);
+    double.splice(0, double.length);
+};
+
+module.exports = { is3TimeRepetition, reset3TimeRepetition }

@@ -1,6 +1,7 @@
 const baseURL = 'http://localhost:3001';
 const Board = '/board';
-const Move = '/move'
+const Move = '/move';
+const cpuMove = '/cpumove';
 
 const intoAlphabetic = (number) => {
     return String.fromCharCode(number + 96);
@@ -13,6 +14,20 @@ const intoNumber = (letter) => {
 const isEven = (number) => {
     return Number.isInteger(number / 2);
 };
+
+const getOppositeColor = (pieceColor) => {
+    if (pieceColor === 'w') {
+        return 'b';
+    } else {
+        return 'w';
+    };
+};
+
+let gameVsCpuAs = false;
+
+let cpuTurn = false;
+
+const moveEvent = new Event('moveEvent');
 
 const inputRow = document.getElementById("inputRow");
 
@@ -56,6 +71,7 @@ const makeMove = async (object) => {
             },
             body: bodyJSON
         });
+        document.dispatchEvent(moveEvent);
     } catch (error) {
         console.log(error);
     }
@@ -169,16 +185,18 @@ const handleClicks = async (x, y) => {
             return false;
         } else {
             const data = await getLegalMovesOfSpecificPiece(x, y);
-            for (let index = 0; index < data.length; index++) {
-                const xAlphabet = intoAlphabetic(data[index][0]);
-                const legalSquare = document.getElementById(xAlphabet + data[index][1]);
-                legalSquare.style.boxShadow = 'inset 0 0 0 2px red';
-                
-                if (legalSquare.isLegal) {
-                    legalSquare.isLegal.push(data[index]);
-                } else {
-                    legalSquare.isLegal = [data[index]];
-                }  
+            if (!cpuTurn) {
+                for (let index = 0; index < data.length; index++) {
+                    const xAlphabet = intoAlphabetic(data[index][0]);
+                    const legalSquare = document.getElementById(xAlphabet + data[index][1]);
+                    legalSquare.style.boxShadow = 'inset 0 0 0 2px red';
+                    
+                    if (legalSquare.isLegal) {
+                        legalSquare.isLegal.push(data[index]);
+                    } else {
+                        legalSquare.isLegal = [data[index]];
+                    }  
+                };
             };
         };
     };
@@ -200,11 +218,13 @@ const addEventListeners = () => {
     }
 };
 
-const updateBoard = async () => {
+const updateBoard = async (response) => {
     try {
-        const response = await fetch(baseURL + Board, {
-            method: 'GET'
-        });
+        if (!response) { 
+            response = await fetch(baseURL + Board, {
+                method: 'GET'
+            });
+        }
         const data = await response.json();
 
         for (let y = 1; y <= 8; y++) {
@@ -256,14 +276,12 @@ const updateBoard = async () => {
             inputRow.appendChild(playAgainButton);
 
             inputRow.endOfGame = message;
+
+            gameVsCpuAs = false;
         };
     } catch (error) {
         console.log(error);
     } ;
-};
-
-const startGameVsCpu = () => {
-    console.log('Future Feature');
 };
 
 const rotateBoard = () => {
@@ -289,12 +307,6 @@ const rotateBoard = () => {
             const newLetter = intoAlphabetic(getOppositeNumber(intoNumber(currentSquare.id[0])));
             const newNumber = getOppositeNumber(currentSquare.id[1]);
 
-            if (currentSquare.className === 'lightSquare') {
-                currentSquare.className = 'darkSquare';
-            } else {
-                currentSquare.className = 'lightSquare';
-            }
-
             currentSquare.id = `${newLetter}${newNumber}`;
         }
     }
@@ -302,12 +314,71 @@ const rotateBoard = () => {
     updateBoard();
 };
 
+const waitForCpuMove = async (color) => {
+    const response = await fetch(baseURL + Board + cpuMove + '/' + color, {
+        method: 'GET'
+    });
+    cpuTurn = false;
+    await updateBoard(response);
+    if (gameVsCpuAs) {
+        waitForHumanMove();
+    };
+};
+
+const waitForHumanMove = (color) => {
+    if (gameVsCpuAs) {
+        cpuTurn = true;
+        waitForCpuMove(color);
+    };
+};
+
+const startGameVsCpu = async (color) => {
+    resetBoard();
+    gameVsCpuAs = color;
+
+    if (color === 'w') {
+        if (flipped) {
+            rotateBoard();
+        }
+    } else {
+        if (!flipped) {
+            cpuTurn = true;
+            rotateBoard();
+            const response = await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
+                method: 'GET'
+            });
+            cpuTurn = false;
+            updateBoard(response);
+        }
+    };
+
+    document.addEventListener('moveEvent', () => {waitForHumanMove(getOppositeColor(color))});
+};
+
+const confirmGameVsCpu = () => {
+    inputRow.innerHTML = 'What color would you like to play?';
+
+    const chooseWhite = document.createElement('img');
+    const chooseBlack = document.createElement('img');
+
+    chooseWhite.src = './assets/chess_pieces_set_0/' + 'white/wK.webp';
+    chooseBlack.src = './assets/chess_pieces_set_0/' + 'black/bK.webp';
+
+    chooseWhite.addEventListener('click', () => {startGameVsCpu('w')});
+    chooseBlack.addEventListener('click', () => {startGameVsCpu('b')});
+
+    inputRow.appendChild(chooseWhite);
+    inputRow.appendChild(chooseBlack);
+};
+
 const addControlColumnEventListeners = () => {
     const btnCpu = document.getElementById('btnCpu')
     const btnRotate = document.getElementById('btnRotate');
+    const btnReset = document.getElementById('btnReset');
 
-    btnCpu.addEventListener('click', startGameVsCpu);
+    btnCpu.addEventListener('click', confirmGameVsCpu);
     btnRotate.addEventListener('click', rotateBoard);
+    btnReset.addEventListener('click', resetBoard);
 };
 
 async function resetBoard() {
@@ -318,6 +389,8 @@ async function resetBoard() {
         await updateBoard();
         inputRow.endOfGame = false;
         clearInputRow();
+        gameVsCpuAs = false;
+        cpuTurn = false;
     } catch (error) {
         console.log(error);
     };
@@ -326,5 +399,3 @@ async function resetBoard() {
 await updateBoard();
 addEventListeners();
 addControlColumnEventListeners();
-
-
