@@ -21,6 +21,7 @@ My goal is to build a fully functional Chess engine in JavaScript utilizing REST
 + shows a play again button if the game ended, by a win for white or black or a draw and displays the reason why the game ended
 + highlights every legal move, when a piece was clicked
 + Sends the move to the backend if a highlighted square was clicked on
++ rotating the board 
 
 ## How To Start?
 
@@ -32,7 +33,6 @@ My goal is to build a fully functional Chess engine in JavaScript utilizing REST
 
 ## Expected Features In The Future
 ### Frontend
-+ flipping the board
 + choosing to play a local human vs human or human vs engine
 + choosing the strength of the engine
 

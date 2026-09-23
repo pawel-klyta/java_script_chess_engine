@@ -9,7 +9,7 @@ const cors = require('cors');
 const board_router = require('./board_router.js');
 
 // cors
-app.use(cors({ origin: 'http://localhost:3001/' }));
+app.use(cors());
 
 // parse body
 app.use(json());

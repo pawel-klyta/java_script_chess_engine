@@ -6,6 +6,14 @@ const intoAlphabetic = (number) => {
     return String.fromCharCode(number + 96);
 };
 
+const intoNumber = (letter) => {
+    return letter.codePointAt(0) - 96;
+};
+
+const isEven = (number) => {
+    return Number.isInteger(number / 2);
+};
+
 const inputRow = document.getElementById("inputRow");
 
 let promoteToQueen = null;
@@ -78,8 +86,13 @@ const findToMove = () => {
     return false;
 };
 
+let flipped = false;
 const handleClicks = async (x, y) => {
     clearInputRow();
+    if (flipped) {
+        x = intoAlphabetic(getOppositeNumber(intoNumber(x)));
+        y = getOppositeNumber(y);
+    };
     const currentSquare = document.getElementById(x + y);
     if (currentSquare.isLegal) {
         if (currentSquare.isLegal.length === 1) {
@@ -90,7 +103,7 @@ const handleClicks = async (x, y) => {
             }
             await makeMove(moveObject)
             clearAllMarking();
-            updateBoard();
+            await updateBoard();
             return
         } else {
             const pieceColor = findToMove().piece[0];
@@ -171,6 +184,11 @@ const handleClicks = async (x, y) => {
     };
 };
 
+const getOppositeNumber = (number) => {
+    const difference = 4 - number;
+    return 5 + difference;
+};
+
 const addEventListeners = () => {
     for (let y = 1; y <= 8; y++) {
         for (let x = 1; x <= 8; x++) {
@@ -244,6 +262,54 @@ const updateBoard = async () => {
     } ;
 };
 
+const startGameVsCpu = () => {
+    console.log('Future Feature');
+};
+
+const rotateBoard = () => {
+    if (flipped) {
+        flipped = false;
+    } else {
+        flipped = true;
+    }
+
+    const descriptionSquares = document.getElementsByClassName('descriptionSquare');
+    for (let y = 1; y <= 8; y++) {
+        const index = y - 1;
+        const index2 = index + 8
+
+        descriptionSquares[index].innerHTML = getOppositeNumber(descriptionSquares[index].innerHTML);
+        descriptionSquares[index2].innerHTML = intoAlphabetic(getOppositeNumber(intoNumber(descriptionSquares[index2].innerHTML)));
+
+        for (let x = 1; x <= 8; x++) {
+            const xAlphabet = intoAlphabetic(x);
+            const currentSquare = document.getElementsByClassName("board")[0].children[y - 1].children[x - 1];
+            currentSquare.removeEventListener('click', () => {handleClicks(xAlphabet, y)});
+
+            const newLetter = intoAlphabetic(getOppositeNumber(intoNumber(currentSquare.id[0])));
+            const newNumber = getOppositeNumber(currentSquare.id[1]);
+
+            if (currentSquare.className === 'lightSquare') {
+                currentSquare.className = 'darkSquare';
+            } else {
+                currentSquare.className = 'lightSquare';
+            }
+
+            currentSquare.id = `${newLetter}${newNumber}`;
+        }
+    }
+    clearAllMarking();
+    updateBoard();
+};
+
+const addControlColumnEventListeners = () => {
+    const btnCpu = document.getElementById('btnCpu')
+    const btnRotate = document.getElementById('btnRotate');
+
+    btnCpu.addEventListener('click', startGameVsCpu);
+    btnRotate.addEventListener('click', rotateBoard);
+};
+
 async function resetBoard() {
     try {
         await fetch(baseURL + Board + '/new', {
@@ -259,7 +325,6 @@ async function resetBoard() {
 
 await updateBoard();
 addEventListeners();
-//await makeMove({ coords: [2, 2], piece: 'wP', move: [2, 3, false]});
-//await updateBoard();
+addControlColumnEventListeners();
 
 
