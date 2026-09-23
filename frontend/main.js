@@ -1,6 +1,7 @@
 const baseURL = 'http://localhost:3001';
 const Board = '/board';
-const Move = '/move'
+const Move = '/move';
+const cpuMove = '/cpumove';
 
 const intoAlphabetic = (number) => {
     return String.fromCharCode(number + 96);
@@ -262,10 +263,6 @@ const updateBoard = async () => {
     } ;
 };
 
-const startGameVsCpu = () => {
-    console.log('Future Feature');
-};
-
 const rotateBoard = () => {
     if (flipped) {
         flipped = false;
@@ -289,12 +286,6 @@ const rotateBoard = () => {
             const newLetter = intoAlphabetic(getOppositeNumber(intoNumber(currentSquare.id[0])));
             const newNumber = getOppositeNumber(currentSquare.id[1]);
 
-            if (currentSquare.className === 'lightSquare') {
-                currentSquare.className = 'darkSquare';
-            } else {
-                currentSquare.className = 'lightSquare';
-            }
-
             currentSquare.id = `${newLetter}${newNumber}`;
         }
     }
@@ -302,12 +293,49 @@ const rotateBoard = () => {
     updateBoard();
 };
 
+const startGameVsCpu = async (color) => {
+    resetBoard();
+
+    if (color === 'w') {
+        if (flipped) {
+            rotateBoard();
+        }
+    } else {
+        if (!flipped) {
+            rotateBoard();
+            const response = await fetch(baseURL + Board + cpuMove + '/' + color, {
+                method: 'GET'
+            });
+            const data = await response.JSON();
+            console.log(data);
+        }
+    };
+};
+
+const confirmGameVsCpu = () => {
+    inputRow.innerHTML = 'What color would you like to play?';
+
+    const chooseWhite = document.createElement('img');
+    const chooseBlack = document.createElement('img');
+
+    chooseWhite.src = './assets/chess_pieces_set_0/' + 'white/wK.webp';
+    chooseBlack.src = './assets/chess_pieces_set_0/' + 'black/bK.webp';
+
+    chooseWhite.addEventListener('click', () => {startGameVsCpu('w')});
+    chooseBlack.addEventListener('click', () => {startGameVsCpu('b')});
+
+    inputRow.appendChild(chooseWhite);
+    inputRow.appendChild(chooseBlack);
+};
+
 const addControlColumnEventListeners = () => {
     const btnCpu = document.getElementById('btnCpu')
     const btnRotate = document.getElementById('btnRotate');
+    const btnReset = document.getElementById('btnReset');
 
-    btnCpu.addEventListener('click', startGameVsCpu);
+    btnCpu.addEventListener('click', confirmGameVsCpu);
     btnRotate.addEventListener('click', rotateBoard);
+    btnReset.addEventListener('click', resetBoard);
 };
 
 async function resetBoard() {
@@ -326,5 +354,3 @@ async function resetBoard() {
 await updateBoard();
 addEventListeners();
 addControlColumnEventListeners();
-
-

@@ -20,7 +20,8 @@ const {
 } = require("./pieceSwitch.js");
 
 const {
-    is3TimeRepetition
+    is3TimeRepetition,
+    reset3TimeRepetition
 } = require("./repetitionCheck.js");
 
 class board {
@@ -87,6 +88,8 @@ class board {
         this.moveCount = 0;
         this.ruleCount50 = 0;
         this.endOfGame = false;
+
+        reset3TimeRepetition();
     }
 
     countLegal(color) {
