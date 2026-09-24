@@ -44,8 +44,8 @@ board_router.get('/' ,(req, res, next) => {
     res.status(200).send({ board: game.board, endOfGame: game.endOfGame });
 });
 
-board_router.get('/cpumove/:color', (req, res, next) => {
-    makeCpuMove(req.color);
+board_router.get('/cpumove/:color', async (req, res, next) => {
+    await makeCpuMove(req.color);
     res.status(200).send({ board: game.board, endOfGame: game.endOfGame });
 });
 

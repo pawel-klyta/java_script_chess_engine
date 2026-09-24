@@ -31,6 +31,9 @@ const moveEvent = new Event('moveEvent');
 
 const inputRow = document.getElementById("inputRow");
 
+const endOfGameMessage = document.createElement("span");
+const playAgainButton = document.createElement("button");
+
 let promoteToQueen = null;
 let promoteToRook = null;
 let promoteToBishop = null;
@@ -104,6 +107,10 @@ const findToMove = () => {
 
 let flipped = false;
 const handleClicks = async (x, y) => {
+    if (cpuTurn) {
+        return;
+    }
+
     clearInputRow();
     if (flipped) {
         x = intoAlphabetic(getOppositeNumber(intoNumber(x)));
@@ -185,18 +192,16 @@ const handleClicks = async (x, y) => {
             return false;
         } else {
             const data = await getLegalMovesOfSpecificPiece(x, y);
-            if (!cpuTurn) {
-                for (let index = 0; index < data.length; index++) {
-                    const xAlphabet = intoAlphabetic(data[index][0]);
-                    const legalSquare = document.getElementById(xAlphabet + data[index][1]);
-                    legalSquare.style.boxShadow = 'inset 0 0 0 2px red';
-                    
-                    if (legalSquare.isLegal) {
-                        legalSquare.isLegal.push(data[index]);
-                    } else {
-                        legalSquare.isLegal = [data[index]];
-                    }  
-                };
+            for (let index = 0; index < data.length; index++) {
+                const xAlphabet = intoAlphabetic(data[index][0]);
+                const legalSquare = document.getElementById(xAlphabet + data[index][1]);
+                legalSquare.style.boxShadow = 'inset 0 0 0 2px red';
+                
+                if (legalSquare.isLegal) {
+                    legalSquare.isLegal.push(data[index]);
+                } else {
+                    legalSquare.isLegal = [data[index]];
+                }  
             };
         };
     };
@@ -218,13 +223,11 @@ const addEventListeners = () => {
     }
 };
 
-const updateBoard = async (response) => {
+const updateBoard = async () => {
     try {
-        if (!response) { 
-            response = await fetch(baseURL + Board, {
-                method: 'GET'
-            });
-        }
+        const response = await fetch(baseURL + Board, {
+            method: 'GET'
+        });
         const data = await response.json();
 
         for (let y = 1; y <= 8; y++) {
@@ -251,8 +254,6 @@ const updateBoard = async (response) => {
             };
         };
         if (data.endOfGame) {
-            const endOfGameMessage = document.createElement("span");
-            const playAgainButton = document.createElement("button");
             let message;
 
             switch (data.endOfGame) {
@@ -271,6 +272,11 @@ const updateBoard = async (response) => {
             playAgainButton.innerHTML = "Play Again!";
             playAgainButton.id = "playAgain";
             playAgainButton.addEventListener('click', resetBoard);
+
+            if (inputRow.hasChildNodes()) {
+                const currentPiece = inputRow.firstChild;
+                inputRow.removeChild(currentPiece);
+            };
 
             inputRow.appendChild(endOfGameMessage);
             inputRow.appendChild(playAgainButton);
@@ -315,25 +321,38 @@ const rotateBoard = () => {
 };
 
 const waitForCpuMove = async (color) => {
-    const response = await fetch(baseURL + Board + cpuMove + '/' + color, {
+    const response = await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
         method: 'GET'
     });
     cpuTurn = false;
-    await updateBoard(response);
+    await updateBoard();
     if (gameVsCpuAs) {
-        waitForHumanMove();
+        await waitForHumanMove(color);
     };
 };
 
-const waitForHumanMove = (color) => {
+const waitForHumanMove = async (color) => {
+    await new Promise(
+        (resolve) => {
+            const moveIndicator = () => {
+            document.removeEventListener('moveEvent', moveIndicator);
+            resolve();
+        };
+
+            document.addEventListener('moveEvent', moveIndicator);
+        }
+    );
+
+    await updateBoard();
+
     if (gameVsCpuAs) {
         cpuTurn = true;
-        waitForCpuMove(color);
+        await waitForCpuMove(color);
     };
 };
 
 const startGameVsCpu = async (color) => {
-    resetBoard();
+    await resetBoard();
     gameVsCpuAs = color;
 
     if (color === 'w') {
@@ -348,14 +367,18 @@ const startGameVsCpu = async (color) => {
                 method: 'GET'
             });
             cpuTurn = false;
-            updateBoard(response);
+            await updateBoard();
         }
     };
 
-    document.addEventListener('moveEvent', () => {waitForHumanMove(getOppositeColor(color))});
+    await waitForHumanMove(color);
 };
 
 const confirmGameVsCpu = () => {
+    if (cpuTurn) {
+        return;
+    }
+
     inputRow.innerHTML = 'What color would you like to play?';
 
     const chooseWhite = document.createElement('img');
@@ -382,6 +405,10 @@ const addControlColumnEventListeners = () => {
 };
 
 async function resetBoard() {
+    if (cpuTurn) {
+        return;
+    }
+
     try {
         await fetch(baseURL + Board + '/new', {
             method: "POST"
