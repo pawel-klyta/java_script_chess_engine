@@ -1,11 +1,30 @@
+
+const {
+    game
+} = require('./game.js')
+
+const randomMove = (moveArray) => {
+    const index = Math.floor(Math.random() * moveArray.length);
+    return moveArray[index];
+};
+
 const makeCpuMove = (color) => {
     (async () => {
-    console.log("Start der IIFE...");
+        console.log("Start der IIFE...");
 
-    // Die Pause (10 Sekunden) verpackt in ein Promise
-    await new Promise(resolve => setTimeout(resolve, 10000));
+        // Die Pause (10 Sekunden) verpackt in ein Promise
+        await new Promise(resolve => setTimeout(resolve, 10000));
 
-    console.log('Oh mann was ein placeholder' + color);
+        let possibleMovesList = game.legalMovesWhite;
+        if (color === 'b') {
+            possibleMovesList = game.legalMovesBlack;
+        };
+
+        console.log(possibleMovesList);
+
+        const nextMove = randomMove(possibleMovesList);
+
+        game.makeMove(nextMove);
 
     })();
 };
