@@ -12,6 +12,7 @@ My goal is to build a fully functional Chess engine in JavaScript utilizing REST
     + castling (is only allowed if the right to castle was maintained and if the path to the castling square is not covered by an enemy piece)
     + en-passant
     + promotion of a pawn
++ performing a random move
 + sending the requested data to the frontend through [API routes](#available-api-routes)
 
 ### Frontend 
@@ -23,6 +24,7 @@ My goal is to build a fully functional Chess engine in JavaScript utilizing REST
 + Sends the move to the backend if a highlighted square was clicked on
 + rotating the board
 + resetting the board
++ choosing to play a local human vs human or human vs engine (+ ability to choose color)
 
 ## How To Start?
 
@@ -34,7 +36,6 @@ My goal is to build a fully functional Chess engine in JavaScript utilizing REST
 
 ## Expected Features In The Future
 ### Frontend
-+ choosing to play a local human vs human or human vs engine
 + choosing the strength of the engine
 
 ### Backend
