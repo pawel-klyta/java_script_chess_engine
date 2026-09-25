@@ -361,16 +361,16 @@ const startGameVsCpu = async (color) => {
         }
     } else {
         if (!flipped) {
-            cpuTurn = true;
             rotateBoard();
-            const response = await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
-                method: 'GET'
-            });
-            cpuTurn = false;
-            await updateBoard();
         }
+        cpuTurn = true;
+        const response = await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
+            method: 'GET'
+        });
+        cpuTurn = false;
+        await updateBoard();
     };
-
+    
     await waitForHumanMove(color);
 };
 
