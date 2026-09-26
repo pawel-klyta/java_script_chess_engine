@@ -23,6 +23,8 @@ const getOppositeColor = (pieceColor) => {
     };
 };
 
+let flipped = false;
+
 let gameVsCpuAs = false;
 
 let cpuTurn = false;
@@ -33,6 +35,15 @@ const inputRow = document.getElementById("inputRow");
 
 const endOfGameMessage = document.createElement("span");
 const playAgainButton = document.createElement("button");
+
+const chooseWhite = document.createElement('img');
+const chooseBlack = document.createElement('img');
+
+chooseWhite.src = './assets/chess_pieces_set_0/' + 'white/wK.webp';
+chooseBlack.src = './assets/chess_pieces_set_0/' + 'black/bK.webp';
+
+chooseWhite.addEventListener('click', () => {startGameVsCpu('w')});
+chooseBlack.addEventListener('click', () => {startGameVsCpu('b')});
 
 let promoteToQueen = null;
 let promoteToRook = null;
@@ -105,7 +116,6 @@ const findToMove = () => {
     return false;
 };
 
-let flipped = false;
 const handleClicks = async (x, y) => {
     if (cpuTurn) {
         return;
@@ -116,6 +126,7 @@ const handleClicks = async (x, y) => {
         x = intoAlphabetic(getOppositeNumber(intoNumber(x)));
         y = getOppositeNumber(y);
     };
+
     const currentSquare = document.getElementById(x + y);
     if (currentSquare.isLegal) {
         if (currentSquare.isLegal.length === 1) {
@@ -156,7 +167,11 @@ const handleClicks = async (x, y) => {
                         currentSquare.isLegal = [currentSquare.isLegal[i]];
                     };
                 };
-                handleClicks(x, y);
+                if (flipped) {
+                    handleClicks(intoAlphabetic(getOppositeNumber(intoNumber(x))), getOppositeNumber(y));
+                } else {
+                    handleClicks(x, y);
+                };
             });
             promoteToRook.addEventListener("click", () => {
                 for (let i = 0; i < currentSquare.isLegal.length; i++) {
@@ -164,7 +179,11 @@ const handleClicks = async (x, y) => {
                         currentSquare.isLegal = [currentSquare.isLegal[i]];
                     };
                 };
-                handleClicks(x, y);
+                if (flipped) {
+                    handleClicks(intoAlphabetic(getOppositeNumber(intoNumber(x))), getOppositeNumber(y));
+                } else {
+                    handleClicks(x, y);
+                };
             });
             promoteToBishop.addEventListener("click", () => {
                 for (let i = 0; i < currentSquare.isLegal.length; i++) {
@@ -172,7 +191,11 @@ const handleClicks = async (x, y) => {
                         currentSquare.isLegal = [currentSquare.isLegal[i]];
                     };
                 };
-                handleClicks(x, y);
+                if (flipped) {
+                    handleClicks(intoAlphabetic(getOppositeNumber(intoNumber(x))), getOppositeNumber(y));
+                } else {
+                    handleClicks(x, y);
+                };
             });
             promoteToKnight.addEventListener("click", () => {
                 for (let i = 0; i < currentSquare.isLegal.length; i++) {
@@ -180,7 +203,11 @@ const handleClicks = async (x, y) => {
                         currentSquare.isLegal = [currentSquare.isLegal[i]];
                     };
                 };
-                handleClicks(x, y);
+                if (flipped) {
+                    handleClicks(intoAlphabetic(getOppositeNumber(intoNumber(x))), getOppositeNumber(y));
+                } else {
+                    handleClicks(x, y);
+                };
             });
         };   
     };
@@ -320,10 +347,19 @@ const rotateBoard = () => {
     updateBoard();
 };
 
-const waitForCpuMove = async (color) => {
-    const response = await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
+const fetchCpuMove = async (color) => {
+    return await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
         method: 'GET'
     });
+};
+
+const waitForCpuMove = async (color) => {
+    if (gameVsCpuAs !== color) {
+        return;
+    };
+
+    const response = await fetchCpuMove(color);
+
     cpuTurn = false;
     await updateBoard();
     if (gameVsCpuAs) {
@@ -364,9 +400,12 @@ const startGameVsCpu = async (color) => {
             rotateBoard();
         }
         cpuTurn = true;
-        const response = await fetch(baseURL + Board + cpuMove + '/' + getOppositeColor(color), {
-            method: 'GET'
-        });
+
+        if (gameVsCpuAs !== color) {
+            return;
+        };
+
+        const response = await fetchCpuMove(color);
         cpuTurn = false;
         await updateBoard();
     };
@@ -380,15 +419,6 @@ const confirmGameVsCpu = () => {
     }
 
     inputRow.innerHTML = 'What color would you like to play?';
-
-    const chooseWhite = document.createElement('img');
-    const chooseBlack = document.createElement('img');
-
-    chooseWhite.src = './assets/chess_pieces_set_0/' + 'white/wK.webp';
-    chooseBlack.src = './assets/chess_pieces_set_0/' + 'black/bK.webp';
-
-    chooseWhite.addEventListener('click', () => {startGameVsCpu('w')});
-    chooseBlack.addEventListener('click', () => {startGameVsCpu('b')});
 
     inputRow.appendChild(chooseWhite);
     inputRow.appendChild(chooseBlack);
