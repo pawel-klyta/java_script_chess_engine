@@ -148,12 +148,28 @@ const updateRightToCastle = (This, move) => {
             if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 1)) {
                 This.rightToCastleShortW = false;
             };
+
+            // if white takes rook
+            if (move.move[0] === 1 && move.move[1] === 8) {
+                This.rightToCastleLongB = false;
+            };
+            if (move.move[0] === 8 && move.move[1] === 8) {
+                This.rightToCastleShortB = false;
+            };
         } else {
             if (move.piece[1] === 'K' || (move.coords[0] === 1 && move.coords[1] === 8)) {
                 This.rightToCastleLongB = false;
             };
             if (move.piece[1] === 'K' || (move.coords[0] === 8 && move.coords[1] === 8)) {
                 This.rightToCastleShortB = false;
+            };
+
+            // if black takes rook
+            if (move.move[0] === 1 && move.move[1] === 1) {
+                This.rightToCastleLongW = false;
+            };
+            if (move.move[0] === 8 && move.move[1] === 1) {
+                This.rightToCastleShortW = false;
             };
         };
 };
