@@ -29,6 +29,8 @@ let gameVsCpuAs = false;
 
 let cpuTurn = false;
 
+let blockFetch = false;
+
 const moveEvent = new Event('moveEvent');
 
 const inputRow = document.getElementById("inputRow");
@@ -354,10 +356,6 @@ const fetchCpuMove = async (color) => {
 };
 
 const waitForCpuMove = async (color) => {
-    if (gameVsCpuAs !== color) {
-        return;
-    };
-
     const response = await fetchCpuMove(color);
 
     cpuTurn = false;
@@ -367,7 +365,7 @@ const waitForCpuMove = async (color) => {
     };
 };
 
-const waitForHumanMove = async (color) => {
+const waitForHumanMove = async (color, newGame = false) => {
     await new Promise(
         (resolve) => {
             const moveIndicator = () => {
@@ -379,15 +377,25 @@ const waitForHumanMove = async (color) => {
         }
     );
 
+    if (!newGame && blockFetch) {
+        blockFetch = false;
+        return;
+    };
+
     await updateBoard();
 
     if (gameVsCpuAs) {
         cpuTurn = true;
+        blockFetch = false;
         await waitForCpuMove(color);
     };
 };
 
 const startGameVsCpu = async (color) => {
+    if (gameVsCpuAs) {
+        blockFetch = true;
+    }
+
     await resetBoard();
     gameVsCpuAs = color;
 
@@ -405,12 +413,12 @@ const startGameVsCpu = async (color) => {
             return;
         };
 
-        const response = await fetchCpuMove(color);
+        const response = await fetchCpuMove(color); // not blocking this fetch
         cpuTurn = false;
         await updateBoard();
     };
     
-    await waitForHumanMove(color);
+    await waitForHumanMove(color, true);
 };
 
 const confirmGameVsCpu = () => {
